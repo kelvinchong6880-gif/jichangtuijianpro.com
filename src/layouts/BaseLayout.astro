@@ -65,6 +65,22 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
             min-height: 100vh;
         }
 
+        /* 修复：教程/知识类浅色页面（.container / .article-content）
+           之前被下面的全局 body 强制琥珀色文字污染，导致白底浅色卡片上文字看不清。
+           这里用 class 选择器（优先级高于 body 的标签选择器）恢复正常配色。 */
+        .container, .container * {
+            color: var(--text-color, #0f172a) !important;
+        }
+        .container a {
+            color: var(--primary, #2563eb) !important;
+        }
+        .container .breadcrumbs, .container .breadcrumbs * {
+            color: var(--text-muted, #64748b) !important;
+        }
+        .container .breadcrumbs a {
+            color: var(--primary, #2563eb) !important;
+        }
+
         /* 强制覆盖整个站点的白底黑字 Tailwind 样式 */
         .bg-white, .bg-gray-50, .bg-gray-100, .bg-blue-50, .bg-yellow-100 {
             background-color: rgba(255,176,0,0.02) !important;
