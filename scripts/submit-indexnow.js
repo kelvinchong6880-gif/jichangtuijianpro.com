@@ -21,7 +21,7 @@ const path = require('path');
 
 const staticPaths = [
   '/', '/xingjiabi/', '/pianyi/', '/youzhi/', '/duibi/', '/paihangbang/',
-  '/knowledge/', '/tutorial/', '/vpn/', '/clash/', '/xiaohuojian/', '/v2rayn/'
+  '/knowledge/', '/tutorial/', '/vpn/', '/clash/', '/xiaohuojian/', '/v2rayn/', '/liumeijiesuo/'
 ];
 
 const brandsDir = path.join(process.cwd(), 'src/content/brands');
