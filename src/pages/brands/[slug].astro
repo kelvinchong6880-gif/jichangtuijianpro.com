@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { render } from 'astro:content';
+import { render, getCollection } from 'astro:content';
 import { getBrands } from '../../utils/data';
 
 export async function getStaticPaths() {
@@ -14,6 +14,8 @@ export async function getStaticPaths() {
 const { brand } = Astro.props;
 const { Content } = await render(brand);
 const evidenceImages = brand.data.evidence_images ?? [];
+const allPosts = await getCollection('posts');
+const hasReview = allPosts.some(p => p.id === brand.id);
 
 const siteDomain = import.meta.env.SITE_DOMAIN || 'https://www.example-jichang.com';
 const price = brand.data.price_monthly ?? brand.data.price_yearly;
@@ -95,6 +97,13 @@ const structuredData = [
 
 
       <div class="prose prose-blue max-w-none">
+        {hasReview && (
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 not-prose">
+            <p class="text-sm text-gray-700 m-0">
+              想看编辑的怎么样/适合谁点评角度？看 <a href={`/ceping/${encodeURIComponent(brand.id)}/`} class="text-blue-600 font-medium">{brand.data.name} 测评文章 →</a>
+            </p>
+          </div>
+        )}
         {brand.data.is_sponsored && (
           <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
             <p class="text-sm text-blue-700 m-0">

@@ -21,8 +21,15 @@ const path = require('path');
 
 const staticPaths = [
   '/', '/xingjiabi/', '/pianyi/', '/youzhi/', '/duibi/', '/paihangbang/',
-  '/knowledge/', '/tutorial/', '/vpn/', '/clash/', '/xiaohuojian/', '/v2rayn/', '/liumeijiesuo/'
+  '/knowledge/', '/tutorial/', '/vpn/', '/clash/', '/xiaohuojian/', '/v2rayn/', '/liumeijiesuo/', '/ceping/'
 ];
+
+const postsDir = path.join(process.cwd(), 'src/content/posts');
+const postSlugs = fs.existsSync(postsDir)
+  ? fs.readdirSync(postsDir)
+      .filter(f => f.endsWith('.md'))
+      .map(f => `/ceping/${encodeURIComponent(f.replace(/\.md$/, ''))}/`)
+  : [];
 
 const brandsDir = path.join(process.cwd(), 'src/content/brands');
 const brandSlugs = fs.existsSync(brandsDir)
@@ -31,7 +38,7 @@ const brandSlugs = fs.existsSync(brandsDir)
       .map(f => `/brands/${encodeURIComponent(f.replace(/\.md$/, ''))}/`)
   : [];
 
-const urlList = [...staticPaths, ...brandSlugs].map(p => `${SITE_DOMAIN}${p}`);
+const urlList = [...staticPaths, ...brandSlugs, ...postSlugs].map(p => `${SITE_DOMAIN}${p}`);
 
 fetch('https://api.indexnow.org/indexnow', {
   method: 'POST',

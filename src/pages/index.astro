@@ -261,7 +261,7 @@ const otherBrands = allBrands.filter(b => b.id !== 'sogo');
                 </div>
                 <div style="display: flex; gap: 16px; flex-wrap: wrap;">
                     <a href={sogoBrand.data.register_link} target="_blank" rel="noopener" class="pa-btn pa-btn-solid" style="flex:1; text-align:center;">前往官网</a>
-                    <a href={`/brands/${sogoBrand.id}/`} class="pa-btn pa-btn-ghost" style="flex:1; text-align:center;">查看评测</a>
+                    <a href={`/ceping/${encodeURIComponent(sogoBrand.id)}/`} class="pa-btn pa-btn-ghost" style="flex:1; text-align:center;">查看评测</a>
                 </div>
             </div>
         </section>
@@ -316,7 +316,7 @@ const otherBrands = allBrands.filter(b => b.id !== 'sogo');
                     
                     <div style="display: flex; gap: 8px; margin-top: auto;">
                         <a href={brand.data.register_link} target="_blank" rel="noopener" class="pa-btn pa-btn-solid" style="flex:1; text-align:center; padding: 6px; font-size: 12px; color: var(--pa-bg) !important;">前往官网</a>
-                        <a href={`/brands/${brand.id}/`} class="pa-btn pa-btn-ghost" style="flex:1; text-align:center; padding: 6px; font-size: 12px;">查看评测</a>
+                        <a href={`/ceping/${encodeURIComponent(brand.id)}/`} class="pa-btn pa-btn-ghost" style="flex:1; text-align:center; padding: 6px; font-size: 12px;">查看评测</a>
                     </div>
                 </div>
             ))}

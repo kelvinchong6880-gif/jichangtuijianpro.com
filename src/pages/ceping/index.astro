@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = (await getCollection('posts')).sort((a, b) => (a.data.sort_order ?? 999) - (b.data.sort_order ?? 999));
+---
+
+<BaseLayout
+  title="机场测评文章合集 2026"
+  description="本站收录品牌的测评文章列表，按官方公开资料整理的套餐分析与点评，附各品牌完整套餐资料链接。"
+>
+  <div class="container">
+    <div style="margin-bottom: 2rem;">
+      <div class="breadcrumbs" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+        <a href="/" style="color: var(--primary); text-decoration: none;">首页</a> &gt; <span>测评文章</span>
+      </div>
+      <h1>机场测评文章</h1>
+      <p style="color: var(--text-muted); margin-top: 0.75rem;">以下是本站收录品牌的测评文章，基于官方公开资料整理，本站尚未对晚高峰速率、解锁效果等逐一独立实测（Sogo云除外，已有部分用户提供的节点延迟截图，详见对应文章）。</p>
+    </div>
+
+    <div style="display: grid; gap: 1rem;">
+      {allPosts.map(post => (
+        <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem 1.5rem; background: var(--card-bg);">
+          <a href={`/ceping/${encodeURIComponent(post.id)}/`} style="color: var(--primary); font-weight: bold; font-size: 1.1rem; text-decoration: none;">{post.data.title}</a>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">{post.data.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
