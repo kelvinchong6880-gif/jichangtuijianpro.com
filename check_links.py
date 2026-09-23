@@ -1,69 +1,73 @@
-import os
-import re
-import sys
-from bs4 import BeautifulSoup
+"""Check generated internal links, fragment IDs and static assets without extra packages."""
 
-def check_links():
-    dist_dir = 'c:/Users/USER/Desktop/jichangtuijianpro.com/dist'
-    
-    html_files = []
-    for root, dirs, files in os.walk(dist_dir):
-        for file in files:
-            if file.endswith('.html'):
-                html_files.append(os.path.join(root, file))
-                
-    valid_paths = set()
-    valid_paths.add('/')
-    for root, dirs, files in os.walk(dist_dir):
-        for file in files:
-            if file == 'index.html':
-                rel = os.path.relpath(root, dist_dir).replace('\\', '/')
-                if rel == '.':
-                    valid_paths.add('/')
-                else:
-                    valid_paths.add('/' + rel + '/')
-                    valid_paths.add('/' + rel)
-            else:
-                rel = os.path.relpath(os.path.join(root, file), dist_dir).replace('\\', '/')
-                valid_paths.add('/' + rel)
+from html.parser import HTMLParser
+from pathlib import Path
+from urllib.parse import unquote, urljoin, urlsplit
+import sys
+
+
+DIST = Path(__file__).resolve().parent / "dist"
+REDIRECTS = Path(__file__).resolve().parent / "public" / "_redirects"
+
+
+class PageParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.ids = set()
+        self.references = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if attrs.get("id"):
+            self.ids.add(attrs["id"])
+        key = {"a": "href", "link": "href", "script": "src", "img": "src", "source": "src"}.get(tag)
+        if key and attrs.get(key):
+            self.references.append((tag, attrs[key]))
+        if tag in {"img", "source"} and attrs.get("srcset"):
+            for candidate in attrs["srcset"].split(","):
+                self.references.append((tag, candidate.strip().split()[0]))
+
+
+def main():
+    if not DIST.is_dir():
+        raise SystemExit("Build output is missing. Run npm run build first.")
+    pages = {}
+    for file in DIST.rglob("*.html"):
+        parser = PageParser()
+        parser.feed(file.read_text(encoding="utf-8"))
+        path = "/" + file.relative_to(DIST).as_posix()
+        if path.endswith("index.html"):
+            path = path[: -len("index.html")]
+        pages[path] = parser
+    redirects = set()
+    if REDIRECTS.exists():
+        for line in REDIRECTS.read_text(encoding="utf-8").splitlines():
+            fields = line.split()
+            if fields and not line.lstrip().startswith("#"):
+                redirects.add(fields[0])
 
     errors = []
-    for html_file in html_files:
-        with open(html_file, 'r', encoding='utf-8') as f:
-            soup = BeautifulSoup(f.read(), 'html.parser')
-            
-        for a in soup.find_all('a', href=True):
-            href = a['href']
-            # Ignore external links and anchors
-            if href.startswith('http') or href.startswith('mailto:') or href.startswith('#'):
+    checked = 0
+    for page_path, parser in pages.items():
+        for tag, ref in parser.references:
+            target = urlsplit(urljoin("https://local.invalid" + page_path, ref))
+            if target.netloc != "local.invalid" or target.scheme not in {"http", "https"}:
                 continue
-                
-            # Strip query params
-            href = href.split('?')[0].split('#')[0]
-            
-            if href not in valid_paths:
-                errors.append(f"Broken link {href} in {html_file}")
-                
-        for link in soup.find_all('link', href=True):
-            href = link['href']
-            if href.startswith('http'): continue
-            href = href.split('?')[0].split('#')[0]
-            if href not in valid_paths:
-                errors.append(f"Broken asset link {href} in {html_file}")
+            path = unquote(target.path)
+            file_path = DIST / path.lstrip("/")
+            page_target = path if path.endswith("/") else path + "/"
+            checked += 1
+            if path not in redirects and page_target not in pages and not file_path.is_file():
+                errors.append(f"{page_path}: missing {tag} target {ref}")
+                continue
+            if tag == "a" and target.fragment and page_target in pages:
+                if unquote(target.fragment) not in pages[page_target].ids:
+                    errors.append(f"{page_path}: missing fragment {ref}")
+    for error in errors:
+        print(error)
+    print(f"Checked {checked} internal references across {len(pages)} pages; {len(errors)} issue(s).")
+    return 1 if errors else 0
 
-        for script in soup.find_all('script', src=True):
-            src = script['src']
-            if src.startswith('http'): continue
-            src = src.split('?')[0].split('#')[0]
-            if src not in valid_paths:
-                errors.append(f"Broken script link {src} in {html_file}")
 
-    if errors:
-        print("Broken links found:")
-        for err in errors:
-            print(err)
-        sys.exit(1)
-    else:
-        print("All internal links and assets are valid.")
-
-check_links()
+if __name__ == "__main__":
+    sys.exit(main())

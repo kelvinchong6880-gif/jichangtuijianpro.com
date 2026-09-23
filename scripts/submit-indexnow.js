@@ -16,13 +16,12 @@ if (!KEY) {
 
 const host = new URL(SITE_DOMAIN).host;
 
-// 静态列出站点主要路径；品牌详情页在下面用 fs 读取 content collection 自动补全
 const fs = require('fs');
 const path = require('path');
 
 const staticPaths = [
   '/', '/xingjiabi/', '/pianyi/', '/youzhi/', '/duibi/', '/paihangbang/',
-  '/knowledge/', '/tutorial/', '/vpn/'
+  '/knowledge/', '/tutorial/', '/vpn/', '/clash/', '/xiaohuojian/', '/v2rayn/'
 ];
 
 const brandsDir = path.join(process.cwd(), 'src/content/brands');

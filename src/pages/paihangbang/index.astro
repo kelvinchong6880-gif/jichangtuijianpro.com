@@ -8,7 +8,7 @@ const allBrands = await getBrands();
 const rankedBrands = allBrands.sort((a, b) => a.data.sort_order - b.data.sort_order || a.data.name.localeCompare(b.data.name));
 ---
 
-<BaseLayout title="机场排行榜：2026年最新推荐榜单" description="全网机场综合排行榜。包含本站精选与全网收录。">
+<BaseLayout title="机场排行榜：编辑推荐顺序与品牌资料" description="本站收录品牌的编辑推荐顺序，非独立实测质量排名。查看价格、付款周期与资料核验情况。">
   
   <div class="max-w-4xl mx-auto space-y-8">
     <div class="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-t-lg shadow-sm">
@@ -41,7 +41,7 @@ const rankedBrands = allBrands.sort((a, b) => a.data.sort_order - b.data.sort_or
               {brand.data.is_sponsored && <span class="ml-2 text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100">本站主推</span>}
             </h2>
             <div class="mt-1 text-sm text-gray-500">
-              起步价: {brand.data.currency} {brand.data.price_monthly || brand.data.price_yearly} / 流量: {brand.data.bandwidth_gb}GB
+              {brand.id === 'sogo' ? '基础版：¥25/月，每 30 天 150GB；小包-年付版：¥98/年，每 30 天 60GB。' : `月付记录：${brand.data.price_monthly ? `${brand.data.currency} ${brand.data.price_monthly}` : '资料未提供'}；年付记录：${brand.data.price_yearly ? `${brand.data.currency} ${brand.data.price_yearly}` : '资料未提供'}。流量记录：${brand.data.bandwidth_gb} GB`}
             </div>
           </div>
           <div class="flex-shrink-0 ml-4">

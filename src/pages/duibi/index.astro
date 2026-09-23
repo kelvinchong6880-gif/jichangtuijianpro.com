@@ -11,7 +11,7 @@ const allBrands = await getBrands();
     <div>
       <h1 class="text-3xl font-extrabold text-gray-900">机场全景对比</h1>
       <p class="mt-2 text-lg text-gray-500">
-        以下数据基于我们最近的收集。同口径横向对比是防止被套路的最有效方法。
+        以下为品牌资料中的价格与流量记录，月付、年付及流量未必来自同一套餐，不能直接据此计算每 GB 成本。请到品牌页核对具体套餐与限制。
       </p>
     </div>
 
@@ -42,11 +42,11 @@ const allBrands = await getBrands();
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900">{brand.data.currency} {brand.data.price_monthly || '-' } / {brand.data.price_yearly || '-'}</div>
+                      <div class="text-sm text-gray-900">{brand.id === 'sogo' ? '基础版 ¥25/月（150GB/30天）；小包 ¥98/年（60GB/30天）' : `${brand.data.currency} ${brand.data.price_monthly || '-'} / ${brand.data.price_yearly || '-'}`}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900">{brand.data.bandwidth_gb} GB</div>
-                      <div class="text-xs text-gray-500">{brand.data.bandwidth_reset_period}</div>
+                      <div class="text-sm text-gray-900">{brand.id === 'sogo' ? '见对应套餐' : `${brand.data.bandwidth_gb} GB`}</div>
+                      <div class="text-xs text-gray-500">{brand.id === 'sogo' ? '两档均每 30 天刷新' : brand.data.bandwidth_reset_period}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {brand.data.device_limit || '未知'}

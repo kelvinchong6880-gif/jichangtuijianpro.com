@@ -2,78 +2,342 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getBrands } from '../../utils/data';
 
-const allBrands = await getBrands();
-
-const calculateValue = (brand: any) => {
-  let monthlyPrice = brand.data.price_monthly;
-  if (!monthlyPrice && brand.data.price_yearly) {
-    monthlyPrice = brand.data.price_yearly / 12;
-  }
-  if (!monthlyPrice || monthlyPrice === 0) return 0;
-  
-  let gb = brand.data.bandwidth_gb;
-  if (brand.data.bandwidth_reset_period === 'none') return -1; 
-  
-  return gb / monthlyPrice;
-};
-
-const sortedBrands = allBrands
-  .map(b => ({ ...b, valueScore: calculateValue(b) }))
-  .sort((a, b) => b.valueScore - a.valueScore);
+const brands = await getBrands();
 ---
 
-<BaseLayout title="性价比机场推荐：高流量与低价格的平衡" description="寻找性价比最高的机场节点？我们通过计算每单位成本获得的流量额度，并结合倍率规则，为您推荐最有价值的选择。">
+<BaseLayout title="性价比机场：价格、流量与倍率怎么比较" description="比较机场套餐时核对付款周期、流量重置和节点倍率。原始资料未统一到具体套餐前，本站不生成误导性的每GB排名。">
   
-  <div class="max-w-4xl mx-auto space-y-8">
-    <div class="border-b border-gray-200 pb-5">
-      <h1 class="text-3xl font-extrabold text-gray-900">性价比机场分析</h1>
-      <p class="mt-3 text-xl text-gray-500">
-        这里的排序基于“每消费1元所能获得的周期内流量（GB）”。注意，高性价比往往意味着线路为普通中转，晚高峰可能存在波动。
-      </p>
-    </div>
-
-    <div class="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul role="list" class="divide-y divide-gray-200">
-        {sortedBrands.map(brand => (
-          <li>
-            <div class="px-4 py-4 sm:px-6 hover:bg-gray-50">
-              <div class="flex items-center justify-between">
-                <p class="text-lg font-medium text-blue-600 truncate">
-                  <a href={`/brands/${brand.id}/`}>{brand.data.name}</a>
-                  {brand.id === 'sogo' && <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">本站主推</span>}
-                </p>
-                <div class="ml-2 flex-shrink-0 flex">
-                  <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    {brand.valueScore > 0 ? `${brand.valueScore.toFixed(1)} GB/元` : (brand.valueScore === -1 ? '不限时无法计算' : '资料不全')}
-                  </p>
-                </div>
-              </div>
-              <div class="mt-2 sm:flex sm:justify-between">
-                <div class="sm:flex">
-                  <p class="flex items-center text-sm text-gray-500">
-                    基础套餐：{brand.data.currency} {brand.data.price_monthly || (brand.data.price_yearly ? brand.data.price_yearly + '/年' : '-')} 
-                  </p>
-                  <p class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                    流量：{brand.data.bandwidth_gb}GB ({brand.data.bandwidth_reset_period === 'monthly' ? '月置' : brand.data.bandwidth_reset_period})
-                  </p>
-                </div>
-                <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                  <p>
-                    状态: {brand.data.evidence_status}
-                  </p>
-                </div>
-              </div>
-              {brand.data.multiplier_desc && (
-                <div class="mt-2 text-xs text-orange-600">
-                  注意：{brand.data.multiplier_desc}（高倍率节点会加速消耗流量，降低实际性价比）
-                </div>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+  <style>
+    /* 针对终端风格美化页面专属样式 */
+    .terminal-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
     
-  </div>
+    .terminal-header {
+      position: relative;
+      border-bottom: 2px dashed var(--pa-amber-border);
+      padding-bottom: 2.5rem;
+      margin-bottom: 3rem;
+    }
 
+    .terminal-grid-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0.2;
+      background-image: linear-gradient(var(--pa-amber-border) 1px, transparent 1px), linear-gradient(90deg, var(--pa-amber-border) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .terminal-h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--pa-amber);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      position: relative;
+      z-index: 10;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .terminal-cursor {
+      display: inline-block;
+      width: 12px;
+      height: 2.5rem;
+      background-color: var(--pa-amber);
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .terminal-subtitle {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      color: var(--pa-text);
+      line-height: 1.8;
+      position: relative;
+      z-index: 10;
+      background: rgba(11, 10, 7, 0.6);
+      padding: 1rem;
+      border-left: 4px solid var(--pa-amber);
+    }
+
+    .algo-box {
+      background-color: rgba(255, 176, 0, 0.03);
+      border: 1px solid var(--pa-amber-border);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(255, 176, 0, 0.02);
+    }
+    
+    .algo-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background-color: var(--pa-amber);
+    }
+
+    .algo-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--pa-amber);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .algo-content {
+      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px dashed var(--pa-amber-border);
+      padding: 1.5rem;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .algo-content p {
+      margin-bottom: 0.75rem;
+    }
+    .algo-content p:last-child {
+      margin-bottom: 0;
+    }
+    .highlight {
+      color: var(--pa-amber);
+      font-weight: bold;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--pa-text);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--pa-amber-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .warning-banner {
+      background-color: rgba(255, 176, 0, 0.08);
+      border: 1px solid var(--pa-amber-border);
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-grid {
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 1.5rem;
+    }
+    @media (min-width: 640px) {
+      .brand-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .brand-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .brand-card {
+      background-color: rgba(255, 176, 0, 0.02);
+      border: 1px solid var(--pa-amber-border);
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+
+    .brand-card:hover {
+      border-color: var(--pa-amber);
+      box-shadow: 0 4px 20px rgba(255, 176, 0, 0.15);
+      transform: translateY(-3px);
+      background-color: rgba(255, 176, 0, 0.04);
+    }
+
+    .card-header {
+      padding: 1.25rem 1.25rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px dashed var(--pa-amber-border);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--pa-text);
+      transition: color 0.3s ease;
+    }
+    .brand-card:hover .card-title {
+      color: var(--pa-amber);
+    }
+
+    .date-badge {
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--pa-amber-border);
+      padding: 0.2rem 0.5rem;
+      font-size: 0.7rem;
+      border-radius: 3px;
+      color: var(--pa-text-dim);
+    }
+
+    .card-body {
+      padding: 1.25rem;
+      flex-grow: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 176, 0, 0.1);
+    }
+    .data-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    
+    .data-label { color: var(--pa-text-dim); }
+    .data-value { font-weight: bold; color: var(--pa-amber); font-size: 0.95rem; }
+
+    .card-footer {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid var(--pa-amber-border);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--pa-text-dim);
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--pa-amber);
+      box-shadow: 0 0 5px var(--pa-amber);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    .card-action {
+      color: var(--pa-amber);
+      font-weight: bold;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: all 0.3s ease;
+    }
+    .brand-card:hover .card-action {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  </style>
+
+  <div class="terminal-container">
+    
+    <!-- Header Section -->
+    <header class="terminal-header">
+      <div class="terminal-grid-bg"></div>
+      <h1 class="terminal-h1">
+        <span>[性价比评估系统]</span>
+        <span class="terminal-cursor"></span>
+      </h1>
+      <p class="terminal-subtitle">
+        <span class="highlight">> 核心问题：</span>如何横向比较不同机场套餐的真实性价比？<br>
+        <span class="highlight">> 评估逻辑：</span>每 GB 成本必须将实付金额、流量周期和节点倍率综合计算。当前数据库尚未完成跨套餐颗粒度的混合排名算法，仅提供原始数据索引。
+      </p>
+    </header>
+
+    <!-- Protocol Box -->
+    <section class="algo-box">
+      <h2 class="algo-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+        核心计算方法
+      </h2>
+      <div class="algo-content">
+        <p><span class="highlight">[月付标准]</span> 每 GB 成本 = 月付金额 ÷ 当月可用额度</p>
+        <p><span class="highlight">[年付重置]</span> 实际年付金额 ÷ 12 ÷ 每月重置额度</p>
+        <p><span class="highlight">[异常警告]</span> 一次性流量包不可与周期套餐按月相除。高倍率节点(x2/x5)的实际消耗倍数需在结算时单独代入公式计算。</p>
+      </div>
+    </section>
+
+    <!-- Cards Section -->
+    <section>
+      <div class="section-title">
+        <h2>品牌初始定价快照</h2>
+        <span style="font-size:0.8rem; border:1px solid var(--pa-amber); padding:0.1rem 0.5rem;">收录总数: {brands.length}</span>
+      </div>
+      
+      <div class="warning-banner">
+        <span>⚠️</span>
+        <span>下列月付、年付摘要金额可能提取自不同档位的套餐，严禁直接相除。点击卡片进入详情页查看完整表格。</span>
+      </div>
+      
+      <div class="brand-grid">
+        {brands.map(brand => (
+          <a href={`/brands/${brand.id}/`} class="brand-card">
+            <div class="card-header">
+              <h3 class="card-title">{brand.data.name}</h3>
+              <span class="date-badge">{brand.data.verification_date}</span>
+            </div>
+            
+            <div class="card-body">
+              <div class="data-row">
+                <span class="data-label">月付下限</span>
+                <span class="data-value">{brand.data.price_monthly ? `${brand.data.currency} ${brand.data.price_monthly.toFixed(2)}` : '暂无'}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">年付参考</span>
+                <span class="data-value">{brand.data.price_yearly ? `${brand.data.currency} ${brand.data.price_yearly.toFixed(2)}` : '暂无'}</span>
+              </div>
+            </div>
+            
+            <div class="card-footer">
+              <div class="status-indicator">
+                <div class="status-dot"></div>
+                {brand.data.evidence_status}
+              </div>
+              <div class="card-action">查看详情 &gt;</div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+  </div>
 </BaseLayout>

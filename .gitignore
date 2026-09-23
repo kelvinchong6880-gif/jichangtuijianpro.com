@@ -17,6 +17,9 @@ pnpm-debug.log*
 .env
 .env.production
 
+# Unreviewed user-provided evidence; publish only curated copies.
+evidence-inbox/
+
 # macOS-specific files
 .DS_Store
 

@@ -6,118 +6,401 @@ const allBrands = await getBrands();
 const sogoBrand = allBrands.find(b => b.id === 'sogo');
 const otherBrands = allBrands.filter(b => b.id !== 'sogo');
 ---
+<BaseLayout title="机场推荐PRO - 极客终端系统" description="硬核极客风格的机场推荐目录">
+<style is:inline>
+    /* Hero */
+    .pa-hero {
+        display: grid;
+        grid-template-columns: 1.2fr 0.9fr;
+        gap: 48px;
+        margin-bottom: 64px;
+    }
+    @media (max-width: 900px) {
+        .pa-hero { grid-template-columns: 1fr; }
+    }
+    .pa-cli-line { font-size: 14px; color: var(--pa-text-dim); margin-bottom: 16px; }
+    .pa-cursor { animation: pa-blink 1s step-end infinite; }
+    @keyframes pa-blink { 50% { opacity: 0; } }
 
-<BaseLayout title="2026 机场推荐：性价比、优质稳定节点全收录" description="最新的机场推荐列表，包含 Sogo云 等经过初步收集整理的节点服务商。根据需求筛选最适合您的便宜、高性价比或稳定机场。">
-  
-  <div class="space-y-12">
-    <!-- 英雄区 -->
-    <section class="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100">
-      <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
-        寻找最适合您的机场网络
-      </h1>
-      <p class="mt-4 text-lg text-gray-500 max-w-3xl mx-auto">
-        本站通过对比分析和部分实测，为您提供不同需求的机场推荐。请注意，所有的服务均存在风险，推荐建议按月支付以降低损失可能。
-      </p>
+    .pa-hero-title {
+        font-size: 48px;
+        margin: 0 0 24px 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .pa-pro-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 30px;
+        border: 2px solid var(--pa-amber);
+        color: var(--pa-amber);
+        padding: 2px 8px;
+        font-weight: bold;
+    }
+
+    .pa-typewriter {
+        font-size: 16px;
+        white-space: pre-wrap;
+        min-height: 80px;
+        margin-bottom: 32px;
+        color: var(--pa-text);
+        line-height: 1.8;
+    }
+
+    .pa-hero-btns { display: flex; gap: 16px; }
+    .pa-btn {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        padding: 10px 24px;
+        cursor: pointer;
+        border: 1px solid var(--pa-amber);
+        transition: all 0.2s;
+        background: transparent;
+        color: var(--pa-amber);
+        text-decoration: none;
+        display: inline-block;
+    }
+    .pa-btn-solid { background: var(--pa-amber); color: var(--pa-bg); }
+    .pa-btn:hover { box-shadow: 0 0 15px var(--pa-amber-weak); }
+    .pa-btn-solid:hover { background: transparent; color: var(--pa-amber); }
+    .pa-btn-ghost:hover { background: var(--pa-amber-weak); }
+
+    /* 监测面板 */
+    .pa-monitor {
+        border: 1px solid var(--pa-amber-border);
+        background: rgba(255,176,0,0.02);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .pa-monitor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed var(--pa-amber-border);
+        padding-bottom: 12px;
+        font-size: 14px;
+        color: var(--pa-amber);
+    }
+    .pa-live-dot {
+        width: 8px; height: 8px;
+        background-color: var(--pa-amber);
+        border-radius: 50%;
+        display: inline-block;
+        margin-left: 8px;
+        animation: pa-pulse 2s infinite;
+    }
+    @keyframes pa-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255,176,0, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(255,176,0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255,176,0, 0); }
+    }
+    .pa-nodes { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+    .pa-node-row { display: flex; justify-content: space-between; }
+    .pa-ping { color: var(--pa-amber); }
+    .pa-canvas-container { width: 100%; height: 64px; border: 1px solid var(--pa-amber-border); position: relative; }
+    .pa-monitor-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--pa-text-dim);
+        border-top: 1px dashed var(--pa-amber-border);
+        padding-top: 12px;
+    }
+
+    /* 卡片网格 (品牌板块) */
+    .pa-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--pa-amber-border);
+        padding-bottom: 12px;
+        margin-top: 64px;
+    }
+    .pa-h2 { font-size: 24px; margin: 0; color: var(--pa-amber); }
+    
+    .pa-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+        margin-bottom: 64px;
+    }
+    .pa-card {
+        border: 1px solid var(--pa-amber-border) !important;
+        background: rgba(255,176,0,0.02) !important;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+    .pa-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        border-bottom: 1px dashed var(--pa-amber-border);
+        padding-bottom: 12px;
+    }
+    .pa-card-name {
+        font-size: 18px;
+        color: var(--pa-amber) !important;
+        font-weight: bold;
+    }
+    .pa-card-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .pa-stat-box {
+        background: rgba(0,0,0,0.5);
+        border: 1px solid var(--pa-amber-border);
+        padding: 8px;
+        text-align: center;
+    }
+    .pa-stat-label { font-size: 11px; color: var(--pa-text-dim); margin-bottom: 4px; }
+    .pa-stat-val { font-size: 16px; color: var(--pa-text) !important; font-weight: bold; }
+    .pa-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--pa-amber); animation: pa-pulse 2s infinite; }
+</style>
+
+    <!-- 2. Hero -->
+    <section class="pa-hero">
+        <div class="pa-hero-left">
+            <div class="pa-cli-line">
+                root@cnblog:~/airport-recommend-pro$ ./run --mode=PRO<span class="pa-cursor">▮</span>
+            </div>
+            <h1 class="pa-hero-title pa-title-cn">
+                机场推荐 <span class="pa-pro-badge">PRO</span>
+            </h1>
+            <div class="pa-typewriter" id="paTypewriter"></div>
+            <div class="pa-hero-btns">
+                <a href="#brands-grid" class="pa-btn pa-btn-solid">查看所有品牌</a>
+                <a href="/tutorial/" class="pa-btn pa-btn-ghost">测速方法说明</a>
+            </div>
+        </div>
+
+        <div class="pa-hero-right">
+            <div class="pa-monitor">
+                <div class="pa-monitor-header">
+                    <span>SYSTEM STATUS</span>
+                    <span style="display:flex; align-items:center;">STATIC<span class="pa-live-dot" style="animation:none; opacity:0.5; background:var(--pa-amber);"></span></span>
+                </div>
+                <div class="pa-nodes">
+                    <div class="pa-node-row"><span>收录原则</span> <span style="color:var(--pa-amber)">客观汇总</span></div>
+                    <div class="pa-node-row"><span>数据来源</span> <span style="color:var(--pa-amber)">公开资料/用户截图</span></div>
+                    <div class="pa-node-row"><span>更新机制</span> <span style="color:var(--pa-amber)">定期人工核对</span></div>
+                </div>
+                <div class="pa-canvas-container">
+                    <canvas id="paCanvas" width="420" height="64" style="width:100%; height:64px;"></canvas>
+                </div>
+                <div class="pa-monitor-stats">
+                    <span>{allBrands.length} 收录品牌</span>
+                    <span>持续更新中</span>
+                    <span>客观资料收录</span>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <!-- 演示数据提示 -->
-    {allBrands.some(b => b.data.is_dummy) && (
-      <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <div class="ml-3">
-            <p class="text-sm text-yellow-700">
-              <strong>当前包含演示数据。</strong> 下方展示的部分品牌信息及链接均为占位符，正式线上部署时将自动隐藏此数据，如有占位域名也会阻止发布。
-            </p>
-          </div>
-        </div>
-      </div>
-    )}
-
-    <!-- 本站主推 Sogo云 -->
+    <!-- 3. Sogo 主推 (终端大面板风格) -->
     {sogoBrand && (
-      <section>
-        <h2 class="text-2xl font-bold text-gray-900 border-l-4 border-blue-500 pl-3 mb-6">本站主推</h2>
-        <div class="bg-white rounded-xl shadow-md overflow-hidden border border-blue-100 hover:shadow-lg transition-shadow">
-          <div class="md:flex">
-            <div class="p-8 w-full">
-              <div class="flex justify-between items-start">
-                <div>
-                  <div class="uppercase tracking-wide text-sm text-blue-500 font-semibold mb-1">
-                    {sogoBrand.data.is_sponsored ? '合作伙伴 / 推荐' : '精选'}
-                  </div>
-                  <a href={`/brands/${sogoBrand.id}/`} class="block mt-1 text-2xl leading-tight font-bold text-black hover:underline">
-                    {sogoBrand.data.name}
-                  </a>
-                  <p class="mt-2 text-gray-500">
-                    最低消费：{sogoBrand.data.currency} {sogoBrand.data.price_monthly}/月，流量 {sogoBrand.data.bandwidth_gb} GB。
-                  </p>
-                </div>
-                <div class="text-right">
-                  <a href={sogoBrand.data.register_link} target="_blank" rel="noopener sponsored" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                    前往官网
-                  </a>
-                  <p class="text-xs text-gray-400 mt-2">核验于: {sogoBrand.data.verification_date}</p>
-                </div>
-              </div>
-              <div class="mt-4 prose text-gray-500 line-clamp-3">
-                基于目前收录资料，此品牌提供较为平衡的价格与流量，适合大部分普通网络浏览及流媒体需求的用户。
-              </div>
+        <section>
+            <div class="pa-section-header">
+                <h2 class="pa-h2 pa-title-cn">站长特别推荐：Sogo云</h2>
             </div>
-          </div>
-        </div>
-      </section>
+            <div class="pa-card" style="background: rgba(255,176,0,0.05) !important; border-color: var(--pa-amber) !important;">
+                <div class="pa-card-header" style="border-bottom-color: var(--pa-amber); justify-content: flex-start; gap: 16px;">
+                    {sogoBrand.data.logo && (
+                        <img src={sogoBrand.data.logo} alt={sogoBrand.data.name} style="width:48px; height:48px; border-radius:8px; object-fit:contain; background:rgba(255,255,255,0.9); padding:4px;" />
+                    )}
+                    <span class="pa-card-name" style="font-size: 24px;">[站长主推] {sogoBrand.data.name}</span>
+                    <span class="pa-status" style="margin-left: auto;"></span>
+                </div>
+                
+                <div style="border-top: 1px dashed var(--pa-amber-border); padding-top: 16px; margin-bottom: 24px; margin-top: 16px;">
+                    {sogoBrand.data.features && sogoBrand.data.features.length > 0 ? sogoBrand.data.features.slice(0,2).map(feature => {
+                        const parts = feature.split('：');
+                        const label = parts.length > 1 ? parts[0] : '特性';
+                        const val = parts.length > 1 ? parts[1] : feature;
+                        return (
+                            <div style="display:flex; margin-bottom:8px; font-size:14px;">
+                                <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[{label}]</span>
+                                <span style="color:var(--pa-text);">{val}</span>
+                            </div>
+                        );
+                    }) : (
+                        <>
+                            <div style="display:flex; margin-bottom:8px; font-size:14px;">
+                                <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[流量周期]</span>
+                                <span style="color:var(--pa-text);">{sogoBrand.data.bandwidth_reset_period === 'monthly' ? '每月重置' : '按量计费'}</span>
+                            </div>
+                            <div style="display:flex; margin-bottom:8px; font-size:14px;">
+                                <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[最后核验]</span>
+                                <span style="color:var(--pa-text);">{sogoBrand.data.verification_date || '未知'}</span>
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                    <div class="pa-stat-box">
+                        <div class="pa-stat-label">最低价格</div>
+                        <div class="pa-stat-val" style="color: var(--pa-amber) !important; font-size: 24px;">{sogoBrand.data.price_monthly ? '¥' + sogoBrand.data.price_monthly + '/月起' : (sogoBrand.data.price_yearly ? '¥' + sogoBrand.data.price_yearly + '/年起' : '按量计费')}</div>
+                    </div>
+                    <div class="pa-stat-box">
+                        <div class="pa-stat-label">月流量</div>
+                        <div class="pa-stat-val" style="font-size: 24px;">{sogoBrand.data.bandwidth_gb} GB</div>
+                    </div>
+                    <div class="pa-stat-box">
+                        <div class="pa-stat-label">系统状态</div>
+                        <div class="pa-stat-val" style="color: #4ade80 !important;">Running OK</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                    <a href={sogoBrand.data.register_link} target="_blank" rel="noopener" class="pa-btn pa-btn-solid" style="flex:1; text-align:center;">前往官网</a>
+                    <a href={`/brands/${sogoBrand.id}/`} class="pa-btn pa-btn-ghost" style="flex:1; text-align:center;">查看评测</a>
+                </div>
+            </div>
+        </section>
     )}
 
-    <!-- 其他选择 -->
-    <section>
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-900 border-l-4 border-gray-400 pl-3">更多收录选择</h2>
-        <a href="/duibi/" class="text-sm font-medium text-blue-600 hover:text-blue-500">查看完整对比 &rarr;</a>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {otherBrands.map(brand => (
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col">
-            <h3 class="text-lg font-medium text-gray-900">
-              <a href={`/brands/${brand.id}/`} class="hover:text-blue-600">{brand.data.name}</a>
-            </h3>
-            <div class="mt-2 text-sm text-gray-500 flex-grow">
-              <ul class="space-y-1">
-                <li>价格: {brand.data.currency} {brand.data.price_monthly || '-'}/月</li>
-                <li>流量: {brand.data.bandwidth_gb}GB</li>
-                {brand.data.multiplier_desc && <li class="text-orange-500">限制: {brand.data.multiplier_desc}</li>}
-              </ul>
-            </div>
-            <div class="mt-4 pt-4 border-t border-gray-100">
-              <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">{brand.data.evidence_status}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+    <!-- 4. 其他品牌网格 -->
+    <section id="brands-grid">
+        <div class="pa-section-header">
+            <h2 class="pa-h2 pa-title-cn">所有收录品牌</h2>
+        </div>
+        <div class="pa-grid">
+            {otherBrands.map((brand, i) => (
+                <div class="pa-card">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--pa-amber); margin-bottom:8px;">
+                        <span>>> NO.{i+1}</span>
+                        <span>{brand.data.price_monthly ? '¥' + brand.data.price_monthly + '/月起' : (brand.data.price_yearly ? '¥' + brand.data.price_yearly + '/年起' : '按量计费')}</span>
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                        {brand.data.logo && (
+                            <img src={brand.data.logo} alt={brand.data.name} style="width:32px; height:32px; border-radius:4px; object-fit:contain; background:rgba(255,255,255,0.9); padding:2px;" />
+                        )}
+                        <div style="font-size:24px; font-weight:bold; color:var(--pa-amber);">
+                            {brand.data.name}
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 1px dashed var(--pa-amber-border); padding-top: 16px; margin-bottom: 24px; min-height: 80px;">
+                        {brand.data.features && brand.data.features.length > 0 ? brand.data.features.slice(0,2).map(feature => {
+                            const parts = feature.split('：');
+                            const label = parts.length > 1 ? parts[0] : '特性';
+                            const val = parts.length > 1 ? parts[1] : feature;
+                            return (
+                                <div style="display:flex; margin-bottom:8px; font-size:12px;">
+                                    <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[{label}]</span>
+                                    <span style="color:var(--pa-text); display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">{val}</span>
+                                </div>
+                            );
+                        }) : (
+                            <>
+                                <div style="display:flex; margin-bottom:8px; font-size:12px;">
+                                    <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[流量周期]</span>
+                                    <span style="color:var(--pa-text);">{brand.data.bandwidth_reset_period === 'monthly' ? '每月重置' : '按量计费'}</span>
+                                </div>
+                                <div style="display:flex; margin-bottom:8px; font-size:12px;">
+                                    <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[最后核验]</span>
+                                    <span style="color:var(--pa-text);">{brand.data.verification_date || '未知'}</span>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: auto;">
+                        <a href={brand.data.register_link} target="_blank" rel="noopener" class="pa-btn pa-btn-solid" style="flex:1; text-align:center; padding: 6px; font-size: 12px; color: var(--pa-bg) !important;">前往官网</a>
+                        <a href={`/brands/${brand.id}/`} class="pa-btn pa-btn-ghost" style="flex:1; text-align:center; padding: 6px; font-size: 12px;">查看评测</a>
+                    </div>
+                </div>
+            ))}
+        </div>
     </section>
 
-    <section class="mt-12 max-w-3xl">
-      <h2 class="text-2xl font-bold text-gray-900 border-l-4 border-gray-400 pl-3 mb-6">常见问题</h2>
-      <div class="space-y-6 text-gray-700">
-        <div>
-          <h3 class="font-semibold text-gray-900">怎么判断一个机场好不好用？</h3>
-          <p class="mt-1 text-sm">主要看三点：晚高峰会不会明显降速、是否支持常用的流媒体和 AI 工具解锁、出问题时客服响应速度。本站按<a href="/xingjiabi/" class="text-blue-600">性价比</a>、<a href="/pianyi/" class="text-blue-600">价格</a>、<a href="/youzhi/" class="text-blue-600">线路质量</a>三个维度分别整理了列表，可以按自己最在意的维度去挑。</p>
+    <!-- 5. FAQ -->
+    <section id="faq" style="margin-top: 48px;">
+        <div class="pa-section-header">
+            <h2 class="pa-h2 pa-title-cn">常见问题</h2>
         </div>
-        <div>
-          <h3 class="font-semibold text-gray-900">好用的梯子（机场）怎么选？</h3>
-          <p class="mt-1 text-sm">"梯子"通常就是指机场这类代理订阅服务。新手可以先看<a href="/paihangbang/" class="text-blue-600">机场排行榜</a>和<a href="/duibi/" class="text-blue-600">机场对比</a>页面，用短周期套餐试用后再决定是否长期订阅，避免一次性年付踩坑。</p>
+        <div style="display: grid; gap: 16px; max-width: 760px;">
+            <div style="border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 16px 20px;">
+                <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">&gt;&gt; 怎么判断一个机场好不好用？</div>
+                <div style="color: var(--pa-text); font-size: 14px; line-height: 1.7;">主要看晚高峰会不会降速、能不能解锁常用的流媒体和 AI 工具、出问题时官方响应速度。本站按 <a href="/xingjiabi/" style="color: var(--pa-amber);">性价比</a>、<a href="/pianyi/" style="color: var(--pa-amber);">价格</a>、<a href="/youzhi/" style="color: var(--pa-amber);">线路质量</a> 三个维度分别整理，可按自己最在意的维度挑选，具体表现以本站已公开的截图证据和资料来源为准。</div>
+            </div>
+            <div style="border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 16px 20px;">
+                <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">&gt;&gt; 好用的梯子（机场）怎么选？</div>
+                <div style="color: var(--pa-text); font-size: 14px; line-height: 1.7;">"梯子"通常就是指机场这类代理订阅服务。建议先看 <a href="/paihangbang/" style="color: var(--pa-amber);">机场排行榜</a> 和 <a href="/duibi/" style="color: var(--pa-amber);">机场对比</a>，用最短付费周期试用后再决定是否长期订阅，避免一次性年付踩坑。</div>
+            </div>
+            <div style="border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 16px 20px;">
+                <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">&gt;&gt; 用什么客户端软件导入机场订阅？</div>
+                <div style="color: var(--pa-text); font-size: 14px; line-height: 1.7;">Windows/Mac/Linux 常用 <a href="/clash/" style="color: var(--pa-amber);">Clash</a> 或 <a href="/v2rayn/" style="color: var(--pa-amber);">V2rayN</a>，iOS 常用 <a href="/xiaohuojian/" style="color: var(--pa-amber);">小火箭 (Shadowrocket)</a>，Android 可参考 <a href="/tutorial/android/" style="color: var(--pa-amber);">安卓教程</a>。</div>
+            </div>
         </div>
-        <div>
-          <h3 class="font-semibold text-gray-900">用什么客户端软件导入机场订阅？</h3>
-          <p class="mt-1 text-sm">Windows/Mac/Linux 常用 <a href="/clash/" class="text-blue-600">Clash</a> 或 <a href="/v2rayn/" class="text-blue-600">V2rayN</a>，iOS 常用 <a href="/xiaohuojian/" class="text-blue-600">小火箭 (Shadowrocket)</a>，Android 可参考<a href="/tutorial/android/" class="text-blue-600">安卓教程</a>。</p>
-        </div>
-      </div>
     </section>
-  </div>
+
+<script is:inline>
+    // 打字机效果
+    const twText = "基于官方公开资料与用户截图进行汇总\n提供客观的套餐参数与价格比对\n数据最后核对更新于 2026.09 … done.";
+    const twEl = document.getElementById('paTypewriter');
+    let twIdx = 0;
+    function paType() {
+        if (!twEl) return;
+        if (twIdx < twText.length) {
+            twEl.innerHTML = twText.substring(0, twIdx + 1) + '<span style="color:var(--pa-amber); animation: pa-blink 1s step-end infinite;">_</span>';
+            twIdx++;
+            setTimeout(paType, 42);
+        } else {
+            twEl.innerHTML = twText; 
+        }
+    }
+    setTimeout(paType, 500);
+
+    // Canvas 折线图
+    const canvas = document.getElementById('paCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        const MAX_POINTS = 46;
+        let dataPoints = Array(MAX_POINTS).fill(30);
+
+        function paDrawChart() {
+            const last = dataPoints[dataPoints.length - 1];
+            let next = last + (Math.random() * 20 - 10);
+            if(next < 10) next = 10;
+            if(next > 54) next = 54;
+            dataPoints.shift();
+            dataPoints.push(next);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.beginPath();
+            const step = canvas.width / (MAX_POINTS - 1);
+            ctx.moveTo(0, canvas.height);
+            for(let i=0; i<MAX_POINTS; i++) {
+                ctx.lineTo(i * step, canvas.height - dataPoints[i]);
+            }
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(255, 176, 0, 0.1)';
+            ctx.fill();
+
+            ctx.beginPath();
+            for(let i=0; i<MAX_POINTS; i++) {
+                if(i === 0) ctx.moveTo(i * step, canvas.height - dataPoints[i]);
+                else ctx.lineTo(i * step, canvas.height - dataPoints[i]);
+            }
+            ctx.strokeStyle = '#ffb000';
+            ctx.lineWidth = 1.6;
+            ctx.stroke();
+        }
+        setInterval(paDrawChart, 900);
+        paDrawChart();
+    }
+</script>
 
 </BaseLayout>

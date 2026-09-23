@@ -1,4 +1,4 @@
-﻿import { defineCollection } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { z } from 'astro:schema';
 import { glob } from 'astro/loaders';
 
@@ -21,7 +21,12 @@ const brandsCollection = defineCollection({
     refund_policy: z.string().optional(),
     verification_date: z.string(),
     evidence_status: z.string(),
+    evidence_images: z.array(z.object({ src: z.string(), alt: z.string(), width: z.number(), height: z.number() })).optional(),
     is_dummy: z.boolean().default(false), // 鏍囪婕旂ず鏁版嵁锛屾寮忓彂甯冨墠闇€娓呯悊
+    features: z.array(z.string()).optional(),
+    seo_title: z.string().optional(),
+    seo_description: z.string().optional(),
+    seo_h1: z.string().optional(),
   }),
 });
 

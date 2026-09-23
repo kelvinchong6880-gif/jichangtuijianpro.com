@@ -5,13 +5,13 @@ import { getBrands } from '../../utils/data';
 const allBrands = await getBrands();
 ---
 
-<BaseLayout title="优质机场推荐：实测稳定的高级节点" description="寻找高质量、稳定不掉线的专线机场？依据本站的真实测试截图与晚高峰观察，为您推荐真正优质的节点。">
+<BaseLayout title="优质机场怎么选：证据与限制核对" description="核对机场服务质量所需的测试证据、套餐限制和资料来源。当前收录品牌尚无本站独立实测。">
   
   <div class="max-w-4xl mx-auto space-y-8">
     <div class="border-b border-gray-200 pb-5">
-      <h1 class="text-3xl font-extrabold text-gray-900">优质稳定机场</h1>
+      <h1 class="text-3xl font-extrabold text-gray-900">优质机场怎么选</h1>
       <p class="mt-3 text-xl text-gray-500">
-        “贵”不等于“好”。本栏目收录的优质机场，必须经过晚高峰测速、流媒体解锁测试，并附有可追溯的截图证据。（当前展示为演示数据，正式上线将包含测速图）
+        价格高、线路名称或官方宣传不能单独证明服务质量。当前收录品牌均未由本站独立实测，因此这里暂不发布质量排名。选择时请核对您所在地区和使用时段的晚高峰测试、流量倍率、设备限制与退款条件。
       </p>
     </div>
 
@@ -31,21 +31,22 @@ const allBrands = await getBrands();
               <div>
                 <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-2">基础信息</h4>
                 <ul class="text-sm text-gray-600 space-y-2">
-                  <li>价格门槛: {brand.data.currency} {brand.data.price_monthly || brand.data.price_yearly}</li>
+                  <li>月付记录: {brand.data.price_monthly ? `${brand.data.currency} ${brand.data.price_monthly}` : '资料未提供'}</li>
+                  <li>年付记录: {brand.data.price_yearly ? `${brand.data.currency} ${brand.data.price_yearly}` : '资料未提供'}</li>
                   <li>设备限制: {brand.data.device_limit ? `${brand.data.device_limit} 台` : '未说明'}</li>
                   <li>退款政策: {brand.data.refund_policy || '未说明'}</li>
                 </ul>
               </div>
               <div>
-                <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-2">测试记录（占位）</h4>
-                <div class="bg-gray-100 rounded p-4 text-center text-gray-400 text-sm border-2 border-dashed border-gray-300">
-                  <p>在此处插入 Speedtest 测速截图</p>
-                  <p class="mt-1 text-xs">测试环境: 广东电信 1000M / 测试时间: {brand.data.verification_date}</p>
+                <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-2">证据范围</h4>
+                <div class="bg-gray-100 rounded p-4 text-sm text-gray-600 border border-gray-200">
+                  <p>{brand.data.evidence_status}。资料核验日期：{brand.data.verification_date}。</p>
+                  <p class="mt-1">暂无可复核的本站晚高峰测速和解锁记录，不据此判断稳定性。</p>
                 </div>
               </div>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-200">
-              <a href={`/brands/${brand.id}/`} class="text-blue-600 hover:text-blue-500 text-sm font-medium">查看详细评测报告 &rarr;</a>
+              <a href={`/brands/${brand.id}/`} class="text-blue-600 hover:text-blue-500 text-sm font-medium">查看品牌资料与套餐 &rarr;</a>
             </div>
           </div>
         </div>

@@ -12,7 +12,6 @@ const schemas = structuredData
   ? (Array.isArray(structuredData) ? structuredData : [structuredData])
   : [];
 
-// 导航菜单配置
 const navItems = [
   { name: '机场推荐', path: '/' },
   { name: '性价比机场', path: '/xingjiabi/' },
@@ -23,7 +22,6 @@ const navItems = [
 ];
 
 const currentPath = Astro.url.pathname;
-// 解析并应用 SITE_DOMAIN 变量
 const siteDomain = import.meta.env.SITE_DOMAIN || 'https://www.example-jichang.com';
 const canonicalURL = new URL(Astro.url.pathname, siteDomain);
 const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === 'true' || siteDomain.includes('example-jichang.com') || (process.env.CF_PAGES === '1' && process.env.CF_PAGES_BRANCH !== 'main');
@@ -41,76 +39,245 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
     {schemas.map((schema) => (
       <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     ))}
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+SC:wght@400;900&display=swap" rel="stylesheet">
+    
+    <style is:global>
+        :root {
+            --pa-bg: #0b0a07;
+            --pa-amber: #ffb000;
+            --pa-amber-weak: rgba(255, 176, 0, 0.15);
+            --pa-amber-border: rgba(255, 176, 0, 0.35);
+            --pa-text: #f0e2c0;
+            --pa-text-dim: #9e937b;
+            --pa-offline: #6b5a2a;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: var(--pa-bg) !important;
+            color: var(--pa-text) !important;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* 强制覆盖整个站点的白底黑字 Tailwind 样式 */
+        .bg-white, .bg-gray-50, .bg-gray-100, .bg-blue-50, .bg-yellow-100 {
+            background-color: rgba(255,176,0,0.02) !important;
+        }
+        .border-gray-100, .border-gray-200, .border-gray-300, .border-blue-400, .border-blue-100, .border-yellow-400 {
+            border-color: var(--pa-amber-border) !important;
+        }
+        .text-gray-900, .text-gray-800, .text-gray-700, .text-blue-700, .text-yellow-800 {
+            color: var(--pa-text) !important;
+        }
+        .text-gray-600, .text-gray-500, .text-gray-400 {
+            color: var(--pa-text-dim) !important;
+        }
+        .text-blue-600, .text-blue-500 {
+            color: var(--pa-amber) !important;
+        }
+        .bg-blue-600, .bg-blue-500, .bg-black, .bg-gray-900 {
+            background-color: var(--pa-amber) !important;
+            color: var(--pa-bg) !important;
+        }
+
+        /* 强制 Prose (Markdown) 暗黑主题 */
+        .prose {
+            --tw-prose-body: var(--pa-text) !important;
+            --tw-prose-headings: var(--pa-amber) !important;
+            --tw-prose-links: var(--pa-amber) !important;
+            --tw-prose-bold: var(--pa-amber) !important;
+            --tw-prose-hr: var(--pa-amber-border) !important;
+            --tw-prose-quotes: var(--pa-text-dim) !important;
+            --tw-prose-quote-borders: var(--pa-amber) !important;
+            --tw-prose-code: var(--pa-amber) !important;
+            --tw-prose-pre-bg: #000000 !important;
+            --tw-prose-th-borders: var(--pa-amber-border) !important;
+            --tw-prose-td-borders: var(--pa-amber-border) !important;
+        }
+        .prose h1, .prose h2, .prose h3, .prose h4 {
+            font-family: 'Noto Sans SC', sans-serif !important;
+        }
+        .prose strong { color: var(--pa-amber) !important; }
+        .prose a { color: var(--pa-amber) !important; text-decoration: underline; }
+        
+        /* 表格强制样式 */
+        table { border-color: var(--pa-amber-border) !important; }
+        th, td { border-color: var(--pa-amber-border) !important; color: var(--pa-text) !important; }
+        th { color: var(--pa-amber) !important; }
+
+        /* 扫描线覆盖层 */
+        .pa-scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: repeating-linear-gradient(0deg, rgba(255,176,0,.035) 0, rgba(255,176,0,.035) 1px, transparent 1px, transparent 3px);
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .pa-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+        }
+
+        .pa-title-cn {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-weight: 900;
+        }
+
+        /* 导航 */
+        .pa-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--pa-amber-border);
+            padding-bottom: 16px;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .pa-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--pa-amber);
+            font-size: 20px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .pa-nav-links {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .pa-nav-links a {
+            color: var(--pa-text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+        .pa-nav-links a:hover, .pa-nav-links a.active {
+            color: var(--pa-amber);
+        }
+        .pa-nav-right {
+            border: 1px solid var(--pa-amber);
+            padding: 4px 12px;
+            color: var(--pa-amber);
+            font-size: 14px;
+        }
+
+        /* 页脚 */
+        .pa-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--pa-amber-border);
+            padding-top: 24px;
+            padding-bottom: 48px;
+            font-size: 12px;
+            color: var(--pa-text-dim);
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 64px;
+        }
+        .pa-ok { color: var(--pa-amber); }
+        
+        .pa-card:hover {
+            border-color: var(--pa-amber) !important;
+            box-shadow: 0 0 10px rgba(255,176,0,0.1);
+        }
+    
+        /* 表格强制样式增强 - 全屏展示，不使用横向滚动条 */
+        .prose table { 
+            width: 100% !important; 
+            display: table !important; 
+            border-collapse: collapse !important;
+            margin: 1.5rem 0 !important;
+            border: 1px solid var(--pa-amber-border) !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+            table-layout: auto !important;
+        }
+        .prose th, .prose td { 
+            border: 1px solid var(--pa-amber-border) !important; 
+            color: var(--pa-text) !important; 
+            padding: 0.85rem 1rem !important;
+            line-height: 1.6 !important;
+            vertical-align: middle !important;
+            word-wrap: break-word !important;
+            white-space: normal !important;
+        }
+        .prose th:first-child, .prose td:first-child {
+            width: 15%;
+            font-weight: bold;
+            color: var(--pa-amber) !important;
+        }
+        .prose th:last-child, .prose td:last-child {
+            width: 45%;
+        }
+        .prose th { 
+            color: var(--pa-amber) !important; 
+            background-color: var(--pa-amber-weak) !important;
+            font-weight: 700 !important;
+            letter-spacing: 1px;
+        }
+        .prose tbody tr:nth-child(even) {
+            background-color: rgba(255, 176, 0, 0.02) !important;
+        }
+        .prose tbody tr:hover td {
+            background-color: rgba(255, 176, 0, 0.08) !important;
+        }
+    </style>
+
   </head>
-  <body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col">
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex-shrink-0 flex items-center">
-            <a href="/" class="text-xl font-bold text-blue-600">机场推荐</a>
-          </div>
-          
-          <nav class="hidden md:flex space-x-8">
-            {navItems.map(item => {
-              const isActive = currentPath === item.path || (item.path !== '/' && currentPath.startsWith(item.path));
-              return (
-                <a 
-                  href={item.path} 
-                  class={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${isActive ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'}`}
-                >
-                  {item.name}
-                </a>
-              );
-            })}
-          </nav>
+  <body>
+    <div class="pa-scanlines"></div>
+    <div class="pa-container">
+        
+        <!-- 全局 CRT 导航 -->
+        <nav class="pa-nav">
+            <a href="/" class="pa-nav-left">
+                <img src="/images/site-logo.jpg" alt="Logo" style="height: 24px; filter: invert(70%) sepia(100%) saturate(300%) hue-rotate(350deg) brightness(100%) contrast(100%); mix-blend-mode: screen;" />
+                <span class="pa-title-cn">机场推荐PRO</span>
+            </a>
+            <div class="pa-nav-links">
+                {navItems.map(item => (
+                    <a href={item.path} class={currentPath === item.path || (item.path !== '/' && currentPath.startsWith(item.path)) ? 'active' : ''}>{item.name}</a>
+                ))}
+            </div>
+            <div class="pa-nav-right" id="paClock">00:00:00</div>
+        </nav>
 
-          <div class="flex items-center md:hidden">
-            <button type="button" id="mobile-menu-btn" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" aria-expanded="false">
-              <span class="sr-only">打开主菜单</span>
-              <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+        <main class="flex-grow">
+            <!-- 子页面内容插槽 -->
+            <slot />
+        </main>
 
-      <div class="md:hidden hidden" id="mobile-menu">
-        <div class="pt-2 pb-3 space-y-1">
-          {navItems.map(item => {
-            const isActive = currentPath === item.path || (item.path !== '/' && currentPath.startsWith(item.path));
-            return (
-              <a 
-                href={item.path} 
-                class={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${isActive ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'}`}
-              >
-                {item.name}
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    </header>
-
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-      <slot />
-    </main>
-
-    <footer class="bg-white border-t border-gray-200 mt-auto">
-      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-        <p>本站内容仅供技术研究参考，请遵守当地法律法规。</p>
-        <p class="mt-2">&copy; {new Date().getFullYear()} 机场推荐. 保留所有权利。</p>
-      </div>
-    </footer>
-
-    <script>
-      const btn = document.getElementById('mobile-menu-btn');
-      const menu = document.getElementById('mobile-menu');
-      if (btn && menu) {
-        btn.addEventListener('click', () => {
-          menu.classList.toggle('hidden');
-        });
-      }
+        <!-- 全局 CRT 页脚 -->
+        <footer class="pa-footer">
+            <div>© 2026 机场推荐PRO · 全站终端化监控中</div>
+            <div>[ <span class="pa-ok">OK</span> ] all systems nominal</div>
+        </footer>
+    </div>
+    
+    <script is:inline>
+        function paUpdateClock() {
+            const now = new Date();
+            const str = [now.getHours(), now.getMinutes(), now.getSeconds()]
+                .map(n => n.toString().padStart(2, '0')).join(':');
+            const clockEl = document.getElementById('paClock');
+            if (clockEl) clockEl.innerText = str;
+        }
+        setInterval(paUpdateClock, 1000);
+        paUpdateClock();
     </script>
   </body>
 </html>
