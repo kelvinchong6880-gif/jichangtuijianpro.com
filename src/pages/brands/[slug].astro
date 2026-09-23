@@ -14,6 +14,34 @@ export async function getStaticPaths() {
 const { brand } = Astro.props;
 const { Content } = await render(brand);
 const evidenceImages = brand.data.evidence_images ?? [];
+
+const siteDomain = import.meta.env.SITE_DOMAIN || 'https://www.example-jichang.com';
+const price = brand.data.price_monthly ?? brand.data.price_yearly;
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: brand.data.name,
+    description: `${brand.data.name} 机场套餐公开资料，核验日期 ${brand.data.verification_date}，证据状态：${brand.data.evidence_status}`,
+    brand: { '@type': 'Brand', name: brand.data.name },
+    offers: price ? {
+      '@type': 'Offer',
+      price: price,
+      priceCurrency: brand.data.currency || 'CNY',
+      url: brand.data.register_link,
+      availability: 'https://schema.org/InStock'
+    } : undefined
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '首页', item: `${siteDomain}/` },
+      { '@type': 'ListItem', position: 2, name: brand.data.name, item: `${siteDomain}/brands/${encodeURIComponent(brand.id)}/` }
+    ]
+  }
+];
 ---
 
 <style is:global>
@@ -39,6 +67,7 @@ const evidenceImages = brand.data.evidence_images ?? [];
 <BaseLayout 
   title={brand.data.seo_title || `${brand.data.name} 套餐资料与价格 - 机场推荐PRO`}
   description={brand.data.seo_description || `${brand.data.name}公开套餐资料、付款周期与注册链接。证据状态：${brand.data.evidence_status}；资料核验日期：${brand.data.verification_date}。`}
+  structuredData={structuredData}
 >
   <article class="max-w-6xl mx-auto bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200">
     <div class="p-8">

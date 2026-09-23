@@ -4,9 +4,13 @@ import '../styles/global.css';
 export interface Props {
   title: string;
   description: string;
+  structuredData?: Record<string, any> | Record<string, any>[];
 }
 
-const { title, description } = Astro.props;
+const { title, description, structuredData } = Astro.props;
+const schemas = structuredData
+  ? (Array.isArray(structuredData) ? structuredData : [structuredData])
+  : [];
 
 const navItems = [
   { name: '机场推荐', path: '/' },
@@ -32,6 +36,9 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
     <link rel="canonical" href={canonicalURL} />
     {isPreviewOrDummy && <meta name="robots" content="noindex, nofollow" />}
     <link rel="sitemap" href="/sitemap-index.xml" />
+    {schemas.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

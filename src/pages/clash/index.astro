@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getBrands } from '../../utils/data';
+
+const allBrands = await getBrands();
+const recommended = [...allBrands].sort((a, b) => a.data.sort_order - b.data.sort_order).slice(0, 8);
+
+const faqs = [
+    {
+        q: 'Clash 和机场是什么关系？',
+        a: 'Clash 本身只是一个免费的开源代理客户端，不提供任何节点。你需要先购买一家机场的套餐，拿到订阅链接，再粘贴进 Clash 里才能使用。市面上绝大多数机场生成的标准订阅链接都兼容 Clash。'
+    },
+    {
+        q: 'Clash、Clash Verge、Clash for Windows、mihomo 是同一个东西吗？',
+        a: '不完全是。Clash 原版内核已经停止更新，现在常用的是基于同一套规则语法的图形客户端，如 Clash Verge Rev、mihomo party 等，它们都兼容标准 Clash 订阅格式，导入方式基本一致。请从对应项目的官方 GitHub Release 页面下载，避免使用来源不明的安装包。'
+    },
+    {
+        q: '导入订阅后没有节点或者连不上怎么办？',
+        a: '先确认订阅链接没有过期、流量没有用完；再检查客户端里是否点了"更新订阅"；如果依然无法连接，可以参考本站的 <a href="/vpn/vpn-not-working/">无网络排障</a> 和 <a href="/vpn/vpn-slow/">网速缓慢排障</a>。'
+    }
+];
+
+const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') }
+    }))
+};
+---
+
+<BaseLayout
+    title="Clash 机场推荐与节点导入教程 2026"
+    description="Clash 客户端怎么用？如何导入机场订阅链接？本文介绍 Clash 系客户端的下载、订阅导入步骤，并附本站收录的机场推荐列表。"
+    structuredData={faqSchema}
+>
+    <div class="container">
+        <div style="margin-bottom: 2rem;">
+            <div class="breadcrumbs" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                <a href="/" style="color: var(--primary); text-decoration: none;">首页</a> &gt; <a href="/tutorial/" style="color: var(--primary); text-decoration: none;">使用教程</a> &gt; <span>Clash</span>
+            </div>
+            <h1>Clash 机场推荐与节点导入教程</h1>
+        </div>
+
+        <div class="article-content" style="background: var(--card-bg); padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color);">
+
+            <div style="background: var(--bg-alt); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+                <strong>快速说明：</strong>Clash 是一款免费开源的规则化代理客户端，本身不含任何节点，需要搭配机场订阅使用。本文教你怎么导入订阅，并附上本站收录的机场列表供参考。
+            </div>
+
+            <h2>一、Clash 是什么，和机场是什么关系</h2>
+            <p>Clash 的核心优势是<strong>规则分流</strong>：可以设置"国内网站直连、部分应用走代理、广告直接拦截"等精细规则，而不是所有流量一刀切地走代理。原版 Clash 内核已停止更新，目前常见的图形客户端（如 Clash Verge Rev、mihomo party）延续了同一套配置语法和订阅格式。</p>
+
+            <h2>二、下载安装</h2>
+            <ul>
+                <li><strong>下载来源：</strong>请前往对应开源项目的官方 GitHub Release 页面下载，不要使用来源不明的第三方打包版本。</li>
+                <li><strong>系统支持：</strong>Windows、macOS、Linux 均有对应版本；如果你用的是 Windows，安装与 SmartScreen 拦截的处理方式可参考 <a href="/tutorial/windows/">Windows 配置教程</a>。</li>
+            </ul>
+
+            <h2>三、导入机场订阅</h2>
+            <ol>
+                <li>登录你购买的机场后台，复制 Clash 专用订阅链接（部分机场的订阅链接通用，部分会单独区分"Clash 订阅"）。</li>
+                <li>打开客户端，进入"订阅 (Profiles)"页面。</li>
+                <li>点击"新建"或"导入"，粘贴订阅链接，点击下载。</li>
+                <li>下载完成后选中该订阅并启用，切换到"代理 (Proxies)"页面选择一个延迟较低的节点。</li>
+            </ol>
+            <p>如果不清楚订阅链接本身是什么、为什么不能泄露，可以先看 <a href="/knowledge/subscription/">机场订阅详解</a>。</p>
+
+            <h2>四、常见问题</h2>
+            {faqs.map(f => (
+                <div style="margin-bottom: 1.5rem;">
+                    <strong>Q: {f.q}</strong>
+                    <p style="margin-top: 0.5rem;" set:html={f.a} />
+                </div>
+            ))}
+
+            <h2>五、支持 Clash 的机场推荐</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">标准的机场订阅链接普遍兼容 Clash 系客户端，以下按本站收录顺序列出，具体价格与流量以各页面标注日期的数据为准，晚高峰速率与解锁效果本站未做独立实测。</p>
+
+            <div style="display: grid; gap: 1rem;">
+                {recommended.map(brand => (
+                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <a href={`/brands/${encodeURIComponent(brand.id)}/`} style="color: var(--primary); font-weight: bold; text-decoration: none; font-size: 1.05rem;">{brand.data.name}</a>
+                            <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                                流量 {brand.data.bandwidth_gb}GB（{brand.data.bandwidth_reset_period === 'monthly' ? '按月重置' : brand.data.bandwidth_reset_period}） · {brand.data.evidence_status}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold;">{brand.data.currency} {brand.data.price_yearly ?? brand.data.price_monthly}{brand.data.price_yearly ? '/年' : '/月'}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <p style="margin-top: 1.5rem;"><a href="/paihangbang/">查看完整机场排行榜 →</a></p>
+
+        </div>
+    </div>
+</BaseLayout>

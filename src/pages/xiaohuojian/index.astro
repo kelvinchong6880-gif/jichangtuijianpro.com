@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getBrands } from '../../utils/data';
+
+const allBrands = await getBrands();
+const recommended = [...allBrands].sort((a, b) => a.data.sort_order - b.data.sort_order).slice(0, 8);
+
+const faqs = [
+    {
+        q: '小火箭（Shadowrocket）为什么在 App Store 搜不到？',
+        a: '小火箭是一款上架在非中国大陆区 App Store 的付费软件（常见于美区、日区、港区等）。如果你的 Apple ID 注册地区是中国大陆，搜索不到属于正常现象，需要一个对应地区的 Apple ID 才能下载，购买时也是按该地区的货币结算。'
+    },
+    {
+        q: '小火箭订阅链接和其它客户端的订阅链接是同一个吗？',
+        a: '大部分机场提供的是通用订阅链接，同时兼容小火箭、Clash、V2rayN 等主流客户端；少数机场会单独区分"小火箭订阅"格式，具体请以机场后台的说明为准。'
+    },
+    {
+        q: '小火箭连不上或者一直转圈怎么办？',
+        a: '先检查订阅是否已过期或流量耗尽，再确认 VPN 权限是否已授权给小火箭（iOS 首次使用需要单独允许添加 VPN 配置）。更多排查思路见 <a href="/tutorial/ios/">iOS 配置教程</a>。'
+    }
+];
+
+const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/<[^>]+>/g, '') }
+    }))
+};
+---
+
+<BaseLayout
+    title="小火箭（Shadowrocket）机场推荐与订阅导入教程 2026"
+    description="小火箭 Shadowrocket 怎么下载、怎么导入机场订阅？介绍 App Store 地区限制、订阅导入步骤，并附本站收录的机场推荐列表。"
+    structuredData={faqSchema}
+>
+    <div class="container">
+        <div style="margin-bottom: 2rem;">
+            <div class="breadcrumbs" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                <a href="/" style="color: var(--primary); text-decoration: none;">首页</a> &gt; <a href="/tutorial/" style="color: var(--primary); text-decoration: none;">使用教程</a> &gt; <span>小火箭</span>
+            </div>
+            <h1>小火箭（Shadowrocket）机场推荐与订阅导入教程</h1>
+        </div>
+
+        <div class="article-content" style="background: var(--card-bg); padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color);">
+
+            <div style="background: var(--bg-alt); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+                <strong>快速说明：</strong>小火箭（Shadowrocket）是 iOS 平台上一款老牌付费代理客户端，界面简洁、设置灵活。使用前需要先有一份机场订阅。
+            </div>
+
+            <h2>一、小火箭是什么</h2>
+            <p>小火箭只在 iOS / iPadOS 上运行，是一次性付费软件（非订阅制），支持规则分流、多种协议。它不提供任何节点，需要配合机场订阅使用。</p>
+
+            <h2>二、下载安装（App Store 地区限制）</h2>
+            <ul>
+                <li>小火箭上架在非中国大陆区 App Store，中国大陆 Apple ID 通常搜索不到，需要切换到有上架该软件的地区账号才能下载和购买。</li>
+                <li>请通过官方 App Store 购买，不要安装来源不明的"破解版"或描述文件，存在数据被劫持的风险。</li>
+            </ul>
+
+            <h2>三、导入机场订阅</h2>
+            <ol>
+                <li>登录机场后台，复制订阅链接。</li>
+                <li>打开小火箭，点击右上角 "+" 号，选择"订阅 (Subscribe)"。</li>
+                <li>粘贴订阅链接，点击右上角"完成"。</li>
+                <li>首次使用需要授权 VPN 配置（系统会弹出"允许添加 VPN 配置"提示，需要点击允许并输入锁屏密码）。</li>
+                <li>选中订阅节点组，右上角开关开启连接。</li>
+            </ol>
+            <p>不清楚订阅链接是什么、为什么不能分享给别人，可以先看 <a href="/knowledge/subscription/">机场订阅详解</a>。</p>
+
+            <h2>四、常见问题</h2>
+            {faqs.map(f => (
+                <div style="margin-bottom: 1.5rem;">
+                    <strong>Q: {f.q}</strong>
+                    <p style="margin-top: 0.5rem;" set:html={f.a} />
+                </div>
+            ))}
+
+            <h2>五、支持小火箭的机场推荐</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">标准机场订阅链接普遍兼容小火箭，以下按本站收录顺序列出，具体价格与流量以各页面标注日期的数据为准，晚高峰速率与解锁效果本站未做独立实测。</p>
+
+            <div style="display: grid; gap: 1rem;">
+                {recommended.map(brand => (
+                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <a href={`/brands/${encodeURIComponent(brand.id)}/`} style="color: var(--primary); font-weight: bold; text-decoration: none; font-size: 1.05rem;">{brand.data.name}</a>
+                            <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                                流量 {brand.data.bandwidth_gb}GB（{brand.data.bandwidth_reset_period === 'monthly' ? '按月重置' : brand.data.bandwidth_reset_period}） · {brand.data.evidence_status}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold;">{brand.data.currency} {brand.data.price_yearly ?? brand.data.price_monthly}{brand.data.price_yearly ? '/年' : '/月'}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <p style="margin-top: 1.5rem;"><a href="/paihangbang/">查看完整机场排行榜 →</a></p>
+
+        </div>
+    </div>
+</BaseLayout>
