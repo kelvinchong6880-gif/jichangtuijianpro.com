@@ -13,11 +13,40 @@ export async function getStaticPaths() {
 
 const { brand } = Astro.props;
 const { Content } = await render(brand);
+
+const siteDomain = import.meta.env.SITE_DOMAIN || 'https://www.example-jichang.com';
+const price = brand.data.price_yearly ?? brand.data.price_monthly;
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: brand.data.name,
+    description: `${brand.data.name} 机场套餐、价格与流量信息，核验日期 ${brand.data.verification_date}`,
+    brand: { '@type': 'Brand', name: brand.data.name },
+    offers: price ? {
+      '@type': 'Offer',
+      price: price,
+      priceCurrency: brand.data.currency || 'CNY',
+      url: brand.data.register_link,
+      availability: 'https://schema.org/InStock'
+    } : undefined
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '首页', item: `${siteDomain}/` },
+      { '@type': 'ListItem', position: 2, name: brand.data.name, item: `${siteDomain}/brands/${encodeURIComponent(brand.id)}/` }
+    ]
+  }
+];
 ---
 
 <BaseLayout 
   title={`${brand.data.name} 评测与套餐价格 - 机场推荐`} 
   description={`${brand.data.name}怎么样？为您提供最新的套餐价格、流媒体解锁测试与注册链接。核验日期：${brand.data.verification_date}。`}
+  structuredData={structuredData}
 >
   <article class="max-w-3xl mx-auto bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200">
     <div class="p-8">
