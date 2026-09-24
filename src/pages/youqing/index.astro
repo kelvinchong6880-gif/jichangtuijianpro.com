@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const friends = [
+    { name: '机场数据库', desc: '22家机场套餐价格、流量与线路对比筛选', url: 'https://tuijianjichang.blog/' },
+    { name: '机场推荐与网络工具指南', desc: '机场知识、套餐测评与使用教程', url: 'https://jichangtuijian.pro/' },
+    { name: '翻墙王', desc: '机场推荐、网络工具与使用指南', url: 'https://clash-vpn.org/' },
+    { name: 'Clash节点查', desc: '机场节点评测与 Clash 使用指南', url: 'https://clashjiedian.org/' },
+    { name: '2026年最新高性价比翻墙机场与稳定梯子推荐', desc: '2026年9月机场推荐排名：10大高性价比/稳定专线实测与选购指南', url: 'https://haoyongjichang.com/' },
+    { name: '找机场', desc: '2026年最新机场测评、真实测速报告与科学上网新手教程汇总', url: 'https://www.findjichang.com/' },
+];
+---
+
+<BaseLayout
+    title="友情链接 - 机场推荐PRO"
+    description="机场推荐PRO 的友情链接，收录同类机场测评、Clash 使用指南与网络工具站点。"
+>
+    <div class="container">
+        <div style="margin-bottom: 2rem;">
+            <div class="breadcrumbs" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                <a href="/" style="color: var(--primary); text-decoration: none;">首页</a> &gt; <span>友情链接</span>
+            </div>
+            <h1>友情链接</h1>
+            <p style="color: var(--text-muted); margin-top: 0.75rem;">以下站点内容由对方站点自行维护，本站不对其内容、可用性或安全性负责，链接仅供参考。</p>
+        </div>
+
+        <div style="display: grid; gap: 1rem;">
+            {friends.map(f => (
+                <a href={f.url} target="_blank" rel="noopener" style="display: block; border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem 1.5rem; background: var(--card-bg); text-decoration: none;">
+                    <div style="color: var(--primary); font-weight: bold; font-size: 1.1rem;">{f.name}</div>
+                    <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.4rem;">{f.desc}</div>
+                    <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.4rem;">{f.url}</div>
+                </a>
+            ))}
+        </div>
+    </div>
+</BaseLayout>
