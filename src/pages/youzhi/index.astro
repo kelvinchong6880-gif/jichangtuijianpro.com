@@ -5,9 +5,38 @@ import { getBrands } from '../../utils/data';
 const allBrands = await getBrands();
 const refundDisclosedCount = allBrands.filter((b: any) => b.data.refund_policy).length;
 const deviceLimitDisclosedCount = allBrands.filter((b: any) => b.data.device_limit).length;
+
+const faqs = [
+  {
+    q: '怎么判断一个机场是不是优质机场？',
+    a: '不要只看宣传语，重点看官网有没有讲清楚退款政策、设备限制这类具体条款，以及是否愿意提供真实的测速/解锁证据。信息越透明，通常越值得信赖。'
+  },
+  {
+    q: 'IPLC专线和IEPL专线哪个更好？',
+    a: '两者都属于专线，理论上比普通中转线路更稳定，但具体表现受节点部署、当时网络环境影响很大，官方标注的线路类型不能单独证明实际速率，建议自己实测。'
+  },
+  {
+    q: '优质机场一定贵吗？',
+    a: '不一定。价格和实际质量之间没有必然的正比关系，本站也没有独立测速数据能证明"贵=好"，具体建议先用短周期套餐验证再决定。'
+  },
+  {
+    q: '机场晚高峰会降速吗？',
+    a: '这是很多机场的通病，具体是否降速、降多少因品牌和节点而异，本站目前没有对收录品牌逐一做晚高峰测速，购买前建议直接问客服或先用短期套餐自己测试。'
+  }
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a }
+  }))
+};
 ---
 
-<BaseLayout title="优质机场怎么选：证据与限制核对" description="核对机场服务质量所需的测试证据、套餐限制和资料来源。当前收录品牌尚无本站独立实测。">
+<BaseLayout title="优质机场怎么选：证据与限制核对" description="核对机场服务质量所需的测试证据、套餐限制和资料来源。当前收录品牌尚无本站独立实测。" structuredData={faqSchema}>
   
   <div class="max-w-4xl mx-auto space-y-8">
     <div class="border-b border-gray-200 pb-5">
@@ -68,6 +97,18 @@ const deviceLimitDisclosedCount = allBrands.filter((b: any) => b.data.device_lim
       ))}
     </div>
     
+    <div class="border-t border-gray-200 pt-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">常见问题</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="font-semibold text-gray-900">{f.q}</div>
+            <div class="mt-1 text-sm text-gray-600">{f.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
   </div>
 
 </BaseLayout>

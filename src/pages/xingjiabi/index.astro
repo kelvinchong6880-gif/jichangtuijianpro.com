@@ -3,9 +3,38 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getBrands } from '../../utils/data';
 
 const brands = await getBrands();
+
+const faqs = [
+  {
+    q: '性价比机场怎么算最准？',
+    a: '把实付金额换算成月成本（年付要除以12），再除以对应周期的可用流量，得到每GB成本；一次性流量包不能按月直接相除，高倍率节点要单独把实际消耗倍数代入计算。'
+  },
+  {
+    q: '便宜的机场是不是性价比就高？',
+    a: '不一定。入门价格低但流量额度也小的话，折算下来每GB成本可能比价格更高、流量更大的套餐还贵，具体要实际算一遍才知道。'
+  },
+  {
+    q: '年付比月付性价比更高吗？',
+    a: '通常年付的月均单价更低，但需要一次性支付一整年的费用，如果是第一次尝试某个品牌，建议先用月付或更短周期验证晚高峰速率和解锁效果，确认满意后再考虑年付。'
+  },
+  {
+    q: '流量倍率怎么影响性价比？',
+    a: '如果某些节点被标注为x2、x5倍率，使用这些节点时实际消耗的流量额度会成倍增加，同样的套餐流量实际能用的时长会大幅缩短，选节点时需要留意倍率标注。'
+  }
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a }
+  }))
+};
 ---
 
-<BaseLayout title="性价比机场：价格、流量与倍率怎么比较" description="比较机场套餐时核对付款周期、流量重置和节点倍率。原始资料未统一到具体套餐前，本站不生成误导性的每GB排名。">
+<BaseLayout title="性价比机场：价格、流量与倍率怎么比较" description="比较机场套餐时核对付款周期、流量重置和节点倍率。原始资料未统一到具体套餐前，本站不生成误导性的每GB排名。" structuredData={faqSchema}>
   
   <style>
     /* 针对终端风格美化页面专属样式 */
@@ -348,6 +377,19 @@ const brands = await getBrands();
               <div class="card-action">查看详情 &gt;</div>
             </div>
           </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="algo-box">
+      <h2 class="algo-title">常见问题</h2>
+      <div class="algo-content" style="display: flex; flex-direction: column; gap: 1rem;">
+        {faqs.map(f => (
+          <div>
+            <p style="margin: 0;"><span class="highlight">Q：{f.q}</span></p>
+            <p style="margin: 0.25rem 0 0 0;">A：{f.a}</p>
+          </div>
         ))}
       </div>
     </section>

@@ -6,9 +6,38 @@ const allBrands = await getBrands();
 
 // 按 sort_order 排名，其次按名称拼音
 const rankedBrands = allBrands.sort((a, b) => a.data.sort_order - b.data.sort_order || a.data.name.localeCompare(b.data.name));
+
+const faqs = [
+  {
+    q: '机场排行榜可信吗？',
+    a: '本页排名是编辑收录顺序，不是靠测速跑分算出来的客观质量排名，这点已经在页面上方说明。可信度取决于你怎么用它——当成一个浏览起点是合理的，当成最终购买依据就不太合适。'
+  },
+  {
+    q: '排名第一的机场就是最好的吗？',
+    a: '不是。排名靠前的品牌是本站编辑主推，可能涉及推广合作关系，具体是否适合你，还要看你自己的价格预算、流量需求和线路偏好。'
+  },
+  {
+    q: '机场排行榜多久更新一次？',
+    a: '本站会不定期核对各品牌资料，具体每个品牌的核验日期显示在对应的品牌资料页上，请以那里标注的日期为准。'
+  },
+  {
+    q: '除了排行榜还应该看什么？',
+    a: '建议再看一下 性价比机场 页学习怎么自己算每GB成本，或者去 机场对比 页把几个候选放在一张表里逐项核对，不要只看排行榜的名次顺序。'
+  }
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a }
+  }))
+};
 ---
 
-<BaseLayout title="机场排行榜：编辑推荐顺序与品牌资料" description="本站收录品牌的编辑推荐顺序，非独立实测质量排名。查看价格、付款周期与资料核验情况。">
+<BaseLayout title="机场排行榜：编辑推荐顺序与品牌资料" description="本站收录品牌的编辑推荐顺序，非独立实测质量排名。查看价格、付款周期与资料核验情况。" structuredData={faqSchema}>
   
   <div class="max-w-4xl mx-auto space-y-8">
     <div class="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-t-lg shadow-sm">
@@ -65,7 +94,19 @@ const rankedBrands = allBrands.sort((a, b) => a.data.sort_order - b.data.sort_or
         </div>
       ))}
     </div>
-    
+
+    <div class="border-t border-gray-200 pt-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">常见问题</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="font-semibold text-gray-900">{f.q}</div>
+            <div class="mt-1 text-sm text-gray-600">{f.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
   </div>
 
 </BaseLayout>

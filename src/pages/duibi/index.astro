@@ -3,9 +3,38 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getBrands } from '../../utils/data';
 
 const allBrands = await getBrands();
+
+const faqs = [
+  {
+    q: '机场对比要看哪些指标？',
+    a: '至少要看价格（换算成月成本）、流量额度与重置周期、设备限制、节点倍率这四项，缺任何一项都容易得出片面结论。'
+  },
+  {
+    q: '不同机场的流量能直接比较吗？',
+    a: '不完全能。按月重置的流量和一次性用完即止的流量池性质不同，直接比较数字大小没有意义，要先看清楚重置规则再比较。'
+  },
+  {
+    q: '怎么对比机场的设备限制？',
+    a: '本站收录的品牌资料里，多数没有明确标注设备台数限制，遇到没标注的情况建议直接问客服，不要假设"不限制"。'
+  },
+  {
+    q: '机场对比表哪里可以看到？',
+    a: '本页下方的表格就是横向对比表，涵盖价格、流量、设备限制和资料核验日期；点击品牌名可以进入该品牌的完整套餐资料页查看更多细节。'
+  }
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a }
+  }))
+};
 ---
 
-<BaseLayout title="机场对比：全网节点套餐详细横向比较" description="将多个机场的套餐价格、流量限制、设备数及付款周期放在一起横向对比，帮您直观发现差异，拒绝盲目跟风。">
+<BaseLayout title="机场对比：全网节点套餐详细横向比较" description="将多个机场的套餐价格、流量限制、设备数及付款周期放在一起横向对比，帮您直观发现差异，拒绝盲目跟风。" structuredData={faqSchema}>
   
   <div class="space-y-6">
     <div>
@@ -76,7 +105,19 @@ const allBrands = await getBrands();
         </div>
       </div>
     </div>
-    
+
+    <div class="border-t border-gray-200 pt-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">常见问题</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="font-semibold text-gray-900">{f.q}</div>
+            <div class="mt-1 text-sm text-gray-600">{f.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
   </div>
 
 </BaseLayout>

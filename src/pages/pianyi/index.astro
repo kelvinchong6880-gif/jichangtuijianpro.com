@@ -13,9 +13,38 @@ const getLowestEntry = (brand: any) => {
 const sortedBrands = allBrands
   .map(b => ({ ...b, entry: getLowestEntry(b) }))
   .sort((a, b) => a.entry.price - b.entry.price);
+
+const faqs = [
+  {
+    q: '最便宜的机场大概多少钱一个月？',
+    a: `按本站当前收录资料，入门价格最低的是 ${sortedBrands[0]?.data.name}，约 ${sortedBrands[0]?.data.currency} ${sortedBrands[0]?.entry.price.toFixed(1)}/月，但具体套餐条款和是否长期有效以官网结算页为准。`
+  },
+  {
+    q: '便宜机场靠谱吗，会不会跑路？',
+    a: '价格便宜和跑不跑路没有必然联系，本站也没有能力预测哪家会停止运营。比较稳妥的做法是第一次先用最短付费周期（月付或更短）试用，不要一上来就年付大额投入，观察一段时间后再决定是否长期订阅。'
+  },
+  {
+    q: '便宜机场和贵的机场区别在哪？',
+    a: '价格差异通常来自线路类型（专线 vs 普通中转）、节点数量和覆盖地区、客服响应速度等方面的官方宣称，但本站未对这些逐一独立实测，具体差异建议自己试用对比。'
+  },
+  {
+    q: '便宜机场适合新手吗？',
+    a: '适合用来低成本试错，先确认自己的实际使用场景（能不能满足日常刷视频、用AI工具等需求），再决定要不要升级到价格更高、流量更大的套餐。'
+  }
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(f => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a }
+  }))
+};
 ---
 
-<BaseLayout title="便宜机场推荐：低预算上车指南" description="预算有限？按绝对入门价格由低到高为您整理了最便宜的节点服务商。包含真实月付与年付折算说明，避免隐藏消费。">
+<BaseLayout title="便宜机场推荐：低预算上车指南" description="预算有限？按绝对入门价格由低到高为您整理了最便宜的节点服务商。包含真实月付与年付折算说明，避免隐藏消费。" structuredData={faqSchema}>
   
   <div class="max-w-4xl mx-auto space-y-8">
     <div class="border-b border-gray-200 pb-5">
@@ -68,7 +97,19 @@ const sortedBrands = allBrands
         </div>
       ))}
     </div>
-    
+
+    <div class="border-t border-gray-200 pt-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">常见问题</h2>
+      <div class="space-y-4">
+        {faqs.map(f => (
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="font-semibold text-gray-900">{f.q}</div>
+            <div class="mt-1 text-sm text-gray-600">{f.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
   </div>
 
 </BaseLayout>
