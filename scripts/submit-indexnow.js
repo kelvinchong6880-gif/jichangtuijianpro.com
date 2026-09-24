@@ -16,8 +16,8 @@ if (!KEY) {
 
 const host = new URL(SITE_DOMAIN).host;
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const staticPaths = [
   '/', '/xingjiabi/', '/pianyi/', '/youzhi/', '/duibi/', '/paihangbang/',
