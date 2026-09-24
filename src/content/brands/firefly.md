@@ -16,7 +16,7 @@ features:
 logo: "/images/logos/firefly-logo.png"
 sort_order: 4
 seo_title: "Firefly (萤火虫) 官方套餐价格表：¥96年付/月付¥25起与¥100不限时流量包资费明细"
-seo_description: "汇总 Firefly（萤火虫）官方在售全档位套餐资费与规格：包含 ¥96/年轻量年付版（月流量60GB）、¥25-¥150/月常规订阅（Lite 150GB、Plus 300GB、Blaze 600GB、Nova 1.0TB），以及 ¥100 一次性不限时永久流量包（总流量100GB，用完为止）。官方标称全节点接入 IPLC 专线，不限速且不限制在线设备数。"
+seo_description: "汇总 Firefly（萤火虫）官方套餐资费：¥25/月起常规订阅（150GB-1.0TB）、¥96/年轻量版，及¥100一次性不限时流量包。全节点IPLC专线，不限设备数。"
 seo_h1: "firefly 官方定价与套餐配比"
 ---
 
