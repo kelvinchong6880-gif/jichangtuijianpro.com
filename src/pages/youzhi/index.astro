@@ -3,6 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getBrands } from '../../utils/data';
 
 const allBrands = await getBrands();
+const refundDisclosedCount = allBrands.filter((b: any) => b.data.refund_policy).length;
+const deviceLimitDisclosedCount = allBrands.filter((b: any) => b.data.device_limit).length;
 ---
 
 <BaseLayout title="优质机场怎么选：证据与限制核对" description="核对机场服务质量所需的测试证据、套餐限制和资料来源。当前收录品牌尚无本站独立实测。">
@@ -12,6 +14,19 @@ const allBrands = await getBrands();
       <h1 class="text-3xl font-extrabold text-gray-900">优质机场怎么选</h1>
       <p class="mt-3 text-xl text-gray-500">
         价格高、线路名称或官方宣传不能单独证明服务质量。当前收录品牌均未由本站独立实测，因此这里暂不发布质量排名。选择时请核对您所在地区和使用时段的晚高峰测试、流量倍率、设备限制与退款条件。
+      </p>
+    </div>
+
+    <div class="prose prose-sm max-w-none text-gray-700 space-y-4">
+      <h2 class="text-xl font-bold text-gray-900">优质机场推荐：与其看宣传语，不如看信息透明度</h2>
+      <p>
+        "全 IPLC 专线""原生 IP 解锁 Netflix"这类宣传语，几乎每家机场官网都会写，单靠这些话判断不出谁更优质。本站认为一个更实际的信号是：<strong>这家机场愿不愿意把退款政策、设备限制这类具体条款讲清楚</strong>——愿意公开细则的，通常对自己的服务更有底气。
+      </p>
+      <p>
+        据实说明：本站当前收录的 {allBrands.length} 家品牌中，官网公开资料<strong>明确写出退款政策的有 {refundDisclosedCount} 家、明确写出设备台数限制的有 {deviceLimitDisclosedCount} 家</strong>。这不代表其余品牌不支持退款或不限制设备，而是官方公开资料里没有讲清楚——这本身就是购买前需要向客服问清楚的地方，也是本站没法据此做质量排名的原因之一。
+      </p>
+      <p>
+        建议在决定购买前，直接找官方客服问三件事：晚高峰速率大概是什么水平、退款政策具体条款、同时能登录几台设备，把回复截图保存，比看官网的宣传文案更可靠。
       </p>
     </div>
 

@@ -24,6 +24,19 @@ const rankedBrands = allBrands.sort((a, b) => a.data.sort_order - b.data.sort_or
       </div>
     </div>
 
+    <div class="prose prose-sm max-w-none text-gray-700 space-y-3 bg-white border border-gray-200 rounded-lg p-6">
+      <h2 class="text-lg font-bold text-gray-900 mt-0">机场排行榜是怎么排的，怎么看比较合适</h2>
+      <p>
+        这份"机场排行榜"的名次，本质上是本站的<strong>编辑收录顺序</strong>，不是靠测速跑分或用户打分算出来的客观质量排名——这点在上面的规则说明里已经写清楚了，这里再展开说说为什么要这样设计。
+      </p>
+      <p>
+        机场这类服务的真实体验（晚高峰速率、解锁效果、长期稳定性）本来就很难在没有持续实测的情况下客观量化，如果强行编一个"综合评分"排出第一到第 {rankedBrands.length} 名，反而是在用一个看起来很权威、实际没有依据的数字误导你。所以本站选择诚实地说明：前几名是编辑主推，后面按品牌名称拼音排序，不代表谁比谁质量更好。
+      </p>
+      <p>
+        如果你的决策标准是价格，去 <a href="/pianyi/" class="text-blue-600">便宜机场</a> 按入门价格由低到高看；如果想自己核算每 GB 成本，去 <a href="/xingjiabi/" class="text-blue-600">性价比机场</a> 看计算方法；如果想把几家放在一张表里逐项核对，去 <a href="/duibi/" class="text-blue-600">机场对比</a>。这份排行榜更适合"不知道从哪家看起"时，作为一个起点浏览，而不是最终的选购依据。
+      </p>
+    </div>
+
     <div class="space-y-4">
       {rankedBrands.map((brand, index) => (
         <div class="bg-white shadow rounded-lg p-6 flex items-center relative overflow-hidden">

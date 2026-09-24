@@ -25,6 +25,22 @@ const sortedBrands = allBrands
       </p>
     </div>
 
+    <div class="prose prose-sm max-w-none text-gray-700 space-y-4">
+      <h2 class="text-xl font-bold text-gray-900">便宜机场推荐怎么选，不只是看月付数字</h2>
+      <p>
+        本页按<strong>绝对入门价格</strong>由低到高排序，方便预算有限的用户第一眼找到最便宜的选项。但"便宜"和"划算"是两回事——入门价最低的套餐，流量额度不一定够用。以本站当前收录的 {sortedBrands.length} 家品牌为例，入门价最低的是 <a href={`/brands/${sortedBrands[0]?.id}/`} class="text-blue-600">{sortedBrands[0]?.data.name}</a>（{sortedBrands[0]?.data.currency} {sortedBrands[0]?.entry.price.toFixed(1)}/月起），流量额度约 {sortedBrands[0]?.data.bandwidth_gb}GB，价格和流量都还算均衡。
+      </p>
+      <p>
+        但排序靠前不代表每 GB 更划算。本站资料里有品牌月付低至 ¥15，月流量却只有 30GB，折算下来每 GB 成本反而比一些月付 ¥20+、流量 100GB+ 的套餐更贵。所以只看"入门价格最低"这一项容易踩坑，建议：
+      </p>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>先看流量额度是否够自己日常用量，再比价格</li>
+        <li>用"价格 ÷ 流量"粗算一下每 GB 成本，具体方法见 <a href="/xingjiabi/" class="text-blue-600">性价比机场</a> 页的计算说明</li>
+        <li>年付折算的月均价通常比月付更低，但需要一次性付一整年的钱，如果是第一次尝试某个品牌，谨慎选择年付</li>
+      </ul>
+      <p class="text-sm text-gray-500">以下列表按入门价格排序，具体套餐条款以品牌页和官网结算页为准。</p>
+    </div>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
       {sortedBrands.map(brand => (
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 relative">
