@@ -278,9 +278,41 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
         </main>
 
         <!-- 全局 CRT 页脚 -->
-        <footer class="pa-footer">
-            <div>© 2026 机场推荐PRO · 全站终端化监控中</div>
-            <div>[ <span class="pa-ok">OK</span> ] all systems nominal</div>
+        <footer class="pa-footer" style="flex-direction: column; align-items: stretch; gap: 24px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between;">
+                <div>
+                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">选购指南</div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <a href="/xingjiabi/" style="color: var(--pa-text-dim);">性价比机场</a>
+                        <a href="/pianyi/" style="color: var(--pa-text-dim);">便宜机场</a>
+                        <a href="/youzhi/" style="color: var(--pa-text-dim);">优质机场</a>
+                        <a href="/duibi/" style="color: var(--pa-text-dim);">机场对比</a>
+                        <a href="/paihangbang/" style="color: var(--pa-text-dim);">机场排行榜</a>
+                        <a href="/liumeijiesuo/" style="color: var(--pa-text-dim);">流媒体解锁机场</a>
+                    </div>
+                </div>
+                <div>
+                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">知识与教程</div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <a href="/knowledge/" style="color: var(--pa-text-dim);">机场知识库</a>
+                        <a href="/vpn/" style="color: var(--pa-text-dim);">VPN基础与排障</a>
+                        <a href="/tutorial/" style="color: var(--pa-text-dim);">使用教程</a>
+                        <a href="/ceping/" style="color: var(--pa-text-dim);">测评文章</a>
+                    </div>
+                </div>
+                <div>
+                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">客户端指南</div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <a href="/clash/" style="color: var(--pa-text-dim);">Clash</a>
+                        <a href="/xiaohuojian/" style="color: var(--pa-text-dim);">小火箭 (Shadowrocket)</a>
+                        <a href="/v2rayn/" style="color: var(--pa-text-dim);">V2rayN</a>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; border-top: 1px solid var(--pa-amber-border); padding-top: 16px;">
+                <div>© 2026 机场推荐PRO · 全站终端化监控中</div>
+                <div>[ <span class="pa-ok">OK</span> ] all systems nominal</div>
+            </div>
         </footer>
     </div>
     
