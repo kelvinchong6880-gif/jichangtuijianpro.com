@@ -34,90 +34,220 @@ const faqSchema = {
 };
 ---
 
-<BaseLayout title="机场对比：全网节点套餐详细横向比较" description="将多个机场的套餐价格、流量限制、设备数及付款周期放在一起横向对比，帮您直观发现差异，拒绝盲目跟风。" structuredData={faqSchema}>
+<BaseLayout title="机场对比：全网节点套餐详细横向对比" description="将多个机场的套餐价格、流量限制、设备数及付款周期放在一起横向对比，帮您直观发现差异，拒绝盲目跟风。" structuredData={faqSchema}>
   
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-3xl font-extrabold text-gray-900">机场对比</h1>
-      <p class="mt-2 text-lg text-gray-500">
-        以下为品牌资料中的价格与流量记录，月付、年付及流量未必来自同一套餐，不能直接据此计算每 GB 成本。请到品牌页核对具体套餐与限制。
-      </p>
-    </div>
+  <style>
+    .terminal-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    .terminal-header {
+      position: relative;
+      border-bottom: 2px dashed var(--pa-amber-border);
+      padding-bottom: 2.5rem;
+      margin-bottom: 3rem;
+    }
+    .terminal-h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--pa-amber);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      letter-spacing: 2px;
+    }
+    .terminal-cursor {
+      display: inline-block;
+      width: 12px;
+      height: 2.5rem;
+      background-color: var(--pa-amber);
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    
+    .terminal-subtitle {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      color: var(--pa-text);
+      line-height: 1.8;
+      background: rgba(11, 10, 7, 0.6);
+      padding: 1rem;
+      border-left: 4px solid var(--pa-amber);
+    }
+    .highlight { color: var(--pa-amber); font-weight: bold; }
 
-    <div class="prose prose-sm max-w-none text-gray-700 space-y-3 bg-white border border-gray-200 rounded-lg p-6">
-      <h2 class="text-lg font-bold text-gray-900 mt-0">机场对比怎么做才不会被表面数字误导</h2>
-      <p>把下面表格里的价格和流量直接放在一起看，很容易只被"谁便宜""谁流量大"带偏。更靠谱的对比方式是三步走：</p>
-      <ol class="list-decimal pl-5 space-y-1">
-        <li><strong>统一到月成本</strong>：年付套餐记得除以 12，不要拿年付总价和别家的月付价格直接比。</li>
-        <li><strong>核对流量重置周期</strong>：按月重置的流量和一次性用完即止的流量池不是一回事，后者更适合用量不稳定的人，但旺季容易提前告罄。</li>
-        <li><strong>看设备限制和节点倍率</strong>：同样的流量额度，如果节点是 x2 倍率消耗，实际能用的时长会打对折。</li>
-      </ol>
-      <p>下表只是原始资料索引，方便你先圈定 2-3 个候选，再逐个点进品牌页核对完整套餐条款后再做决定。</p>
-    </div>
+    /* 机场对比专属：黑金终端数据表 */
+    .terminal-table-container {
+      background: rgba(255, 176, 0, 0.02);
+      border: 1px solid var(--pa-amber-border);
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: inset 0 0 20px rgba(255, 176, 0, 0.02);
+      margin-bottom: 4rem;
+    }
+    .terminal-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      
+    }
+    .terminal-table th {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--pa-text-dim);
+      border-bottom: 1px solid var(--pa-amber);
+      padding: 1rem 0.75rem;
+      background: rgba(255, 176, 0, 0.05);
+    }
+    .terminal-table td {
+      padding: 1rem 0.75rem;
+      border-bottom: 1px dashed var(--pa-amber-border);
+      color: var(--pa-text);
+      vertical-align: middle;
+      transition: background 0.2s;
+    }
+    .terminal-table tr:last-child td { border-bottom: none; }
+    .terminal-table tr:hover td { background: rgba(255, 176, 0, 0.06); }
+    
+    .data-number {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--pa-amber);
+      font-weight: 900;
+      font-size: 1.1rem;
+    }
+    .data-sub {
+      font-size: 0.75rem;
+      color: var(--pa-text-dim);
+      margin-top: 0.25rem;
+    }
+    .action-btn-sm {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border: 1px solid var(--pa-amber-border);
+      color: var(--pa-amber);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .action-btn-sm:hover {
+      background: var(--pa-amber);
+      color: var(--pa-bg);
+      border-color: var(--pa-amber);
+    }
+    
+    .faq-container { border-top: 1px dashed var(--pa-amber-border); padding-top: 2rem; }
+    .faq-title { font-size: 1.5rem; font-weight: bold; color: var(--pa-amber); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .faq-item { background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 1.5rem; margin-bottom: 1rem; }
+    .faq-q { font-weight: bold; color: var(--pa-amber); margin-bottom: 0.5rem; font-size: 1.1rem; }
+    .faq-a { color: var(--pa-text); font-size: 0.95rem; line-height: 1.6; }
+  
+    .terminal-table th:last-child,
+    .terminal-table td:last-child {
+      padding-right: 1rem !important;
+      text-align: right;
+    }
+    .terminal-table-container::-webkit-scrollbar {
+      height: 8px;
+    }
+    .terminal-table-container::-webkit-scrollbar-track {
+      background: rgba(255, 176, 0, 0.05);
+      border-radius: 0 0 8px 8px;
+    }
+    .terminal-table-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 176, 0, 0.3);
+      border-radius: 4px;
+    }
+    .terminal-table-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 176, 0, 0.5);
+    }
+  </style>
 
-    <div class="flex flex-col">
-      <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-          <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">品牌</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">月付/年付</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">流量 (周期)</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">设备限制</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">核验日期</th>
-                  <th scope="col" class="relative px-6 py-3"><span class="sr-only">操作</span></th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                {allBrands.map((brand: any) => (
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="text-sm font-medium text-gray-900">
-                          {brand.data.name}
-                          {brand.id === 'sogo' && <span class="ml-1 text-[10px] bg-blue-100 text-blue-800 px-1 rounded">主推</span>}
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900">{brand.id === 'sogo' ? '基础版 ¥25/月（150GB/30天）；小包 ¥98/年（60GB/30天）' : `${brand.data.currency} ${brand.data.price_monthly || '-'} / ${brand.data.price_yearly || '-'}`}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900">{brand.id === 'sogo' ? '见对应套餐' : `${brand.data.bandwidth_gb} GB`}</div>
-                      <div class="text-xs text-gray-500">{brand.id === 'sogo' ? '两档均每 30 天刷新' : brand.data.bandwidth_reset_period}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {brand.data.device_limit || '未知'}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {brand.data.verification_date}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a href={`/brands/${brand.id}/`} class="text-blue-600 hover:text-blue-900">详情</a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+  <div class="terminal-container">
+    <header class="terminal-header">
+      <h1 class="terminal-h1">
+        <span>[数据对比系统]</span>
+        <span class="terminal-cursor"></span>
+      </h1>
+      <div class="terminal-subtitle">
+        <span class="highlight">> 输入指令: </span>多维度横向拉取品牌资料矩阵，生成聚合对比视图。<br>
+        <span class="highlight">> 系统分析: </span>下表仅为原始索引数据。月付、年付及流量未必来自同一套餐，无法直接跨列相除计算每GB成本。
       </div>
+    </header>
+
+    <div class="terminal-table-container">
+      <table class="terminal-table">
+        <thead>
+          <tr>
+            <th>品牌</th>
+            <th>门槛价格</th>
+            <th>可用流量</th>
+            <th>设备限制</th>
+            <th>核验状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {allBrands.map((brand: any) => (
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  {brand.data.logo && (
+                    <img src={brand.data.logo} alt={`${brand.data.name} logo`} style="height: 28px; width: auto; max-width: 80px; object-fit: contain; border-radius: 4px; background: rgba(255,176,0,0.05); padding: 3px; border: 1px solid rgba(255,176,0,0.2);" />
+                  )}
+                  <div>
+                    <div style="font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                      {brand.data.name}
+                      {brand.id === 'sogo' && <span style="font-size: 0.65rem; background: var(--pa-amber); color: var(--pa-bg); padding: 2px 6px; border-radius: 3px;">主推</span>}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="data-number">
+                  {brand.id === 'sogo' ? '¥25/月起' : `${brand.data.currency} ${brand.data.price_monthly || '-'} / ${brand.data.price_yearly || '-'}`}
+                </div>
+                <div class="data-sub">{brand.id === 'sogo' ? '长周期套餐均有折算优惠' : '月付下限 / 年付参考'}</div>
+              </td>
+              <td>
+                <div class="data-number">{brand.id === 'sogo' ? '≈150 GB' : `${brand.data.bandwidth_gb} GB`}</div>
+                <div class="data-sub">{brand.id === 'sogo' ? '30天周期自动刷新' : brand.data.bandwidth_reset_period}</div>
+              </td>
+              <td>
+                <div style="color: var(--pa-text);">{brand.data.device_limit || '未说明'}</div>
+              </td>
+              <td>
+                <div style="color: var(--pa-text-dim); font-size: 0.85rem;">
+                  {brand.data.verification_date}
+                </div>
+              </td>
+              <td>
+                <a href={`/brands/${brand.id}/`} class="action-btn-sm">
+                  > 查看详情
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
 
-    <div class="border-t border-gray-200 pt-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">常见问题</h2>
+    <div class="faq-container">
+      <h2 class="faq-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        数据校验日志 / FAQ
+      </h2>
       <div class="space-y-4">
         {faqs.map(f => (
-          <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="font-semibold text-gray-900">{f.q}</div>
-            <div class="mt-1 text-sm text-gray-600">{f.a}</div>
+          <div class="faq-item">
+            <div class="faq-q">> {f.q}</div>
+            <div class="faq-a">{f.a}</div>
           </div>
         ))}
       </div>
     </div>
-
   </div>
-
 </BaseLayout>

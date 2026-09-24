@@ -66,9 +66,14 @@ const faqSchema = {
       {allBrands.map((brand: any) => (
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-            <h2 class="text-xl font-bold text-gray-900">
-              {brand.data.name}
-            </h2>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              {brand.data.logo && (
+                <img src={brand.data.logo} alt={`${brand.data.name} logo`} style="height: 28px; width: auto; max-width: 90px; object-fit: contain; border-radius: 4px; background: rgba(255,176,0,0.05); padding: 3px; border: 1px solid rgba(255,176,0,0.2);" />
+              )}
+              <h2 class="text-xl font-bold text-gray-900 m-0">
+                {brand.data.name}
+              </h2>
+            </div>
             {brand.data.evidence_images && brand.data.evidence_images.length > 0 && (
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 有用户截图佐证

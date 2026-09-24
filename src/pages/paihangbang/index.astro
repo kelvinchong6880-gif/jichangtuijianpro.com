@@ -39,74 +39,231 @@ const faqSchema = {
 
 <BaseLayout title="机场排行榜：编辑推荐顺序与品牌资料" description="本站收录品牌的编辑推荐顺序，非独立实测质量排名。查看价格、付款周期与资料核验情况。" structuredData={faqSchema}>
   
-  <div class="max-w-4xl mx-auto space-y-8">
-    <div class="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-t-lg shadow-sm">
-      <h1 class="text-3xl font-extrabold text-gray-900 leading-tight">机场排行榜</h1>
-      <div class="mt-4 text-sm text-gray-600 space-y-2">
-        <p><strong>本榜单排序规则声明：</strong></p>
-        <ul class="list-disc pl-5">
-          <li>本页面为本站编辑推荐顺序，不代表实测质量排名（第1-8名为精选主推，其余按品牌名称拼音排序）。</li>
-          <li>带有“本站主推”标记的品牌代表编辑精选主推。</li>
-          <li>缺失测试数据的品牌将标记为“未实测”。</li>
-          <li>如需按客观价格寻找，请访问独立的<a href="/pianyi/" class="text-blue-600 hover:underline">便宜机场</a>或<a href="/xingjiabi/" class="text-blue-600 hover:underline">性价比机场</a>板块。</li>
-        </ul>
+  <style>
+    .terminal-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    .terminal-header {
+      position: relative;
+      border-bottom: 2px dashed var(--pa-amber-border);
+      padding-bottom: 2.5rem;
+      margin-bottom: 3rem;
+    }
+    .terminal-h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--pa-amber);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      letter-spacing: 2px;
+    }
+    .terminal-cursor {
+      display: inline-block;
+      width: 12px;
+      height: 2.5rem;
+      background-color: var(--pa-amber);
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    
+    .terminal-subtitle {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      color: var(--pa-text);
+      line-height: 1.8;
+      background: rgba(11, 10, 7, 0.6);
+      padding: 1rem;
+      border-left: 4px solid var(--pa-amber);
+    }
+    .highlight { color: var(--pa-amber); font-weight: bold; }
+
+    /* 黑金终端数据表 */
+    .terminal-table-container {
+      background: rgba(255, 176, 0, 0.02);
+      border: 1px solid var(--pa-amber-border);
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: inset 0 0 20px rgba(255, 176, 0, 0.02);
+      margin-bottom: 4rem;
+    }
+    .terminal-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .terminal-table th {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--pa-text-dim);
+      border-bottom: 1px solid var(--pa-amber);
+      padding: 1rem 0.75rem;
+      background: rgba(255, 176, 0, 0.05);
+    }
+    .terminal-table td {
+      padding: 1rem 0.75rem;
+      border-bottom: 1px dashed var(--pa-amber-border);
+      color: var(--pa-text);
+      vertical-align: middle;
+      transition: background 0.2s;
+    }
+    .terminal-table th:first-child, .terminal-table td:first-child { padding-left: 1.5rem; }
+    .terminal-table th:last-child, .terminal-table td:last-child { padding-right: 1.5rem; text-align: right; }
+    
+    .terminal-table tr:last-child td { border-bottom: none; }
+    .terminal-table tr:hover td { background: rgba(255, 176, 0, 0.06); }
+    
+    /* 排行榜名次专属 */
+    .rank-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.75rem;
+      font-weight: 900;
+      width: 4rem;
+    }
+    .rank-1 { color: #ffb000; text-shadow: 0 0 10px rgba(255,176,0,0.5); }
+    .rank-2 { color: #c0c0c0; }
+    .rank-3 { color: #b87333; }
+    .rank-other { color: rgba(255, 176, 0, 0.4); font-size: 1.5rem; }
+
+    .brand-logo {
+      height: 28px;
+      width: auto;
+      max-width: 80px;
+      object-fit: contain;
+      border-radius: 4px;
+      background: rgba(255,176,0,0.05);
+      padding: 2px;
+      border: 1px solid rgba(255,176,0,0.2);
+    }
+
+    .data-number {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--pa-amber);
+      font-weight: 900;
+      font-size: 1rem;
+    }
+    .data-sub {
+      font-size: 0.75rem;
+      color: var(--pa-text-dim);
+      margin-top: 0.25rem;
+    }
+
+    .sponsor-badge {
+      font-size: 0.65rem;
+      background: var(--pa-amber);
+      color: var(--pa-bg);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    
+    .action-btn-exec {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--pa-amber);
+      background: transparent;
+      color: var(--pa-amber);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 900;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+    .action-btn-exec:hover {
+      background: var(--pa-amber);
+      color: var(--pa-bg);
+      box-shadow: 0 0 10px rgba(255,176,0,0.4);
+    }
+    
+    .faq-container { border-top: 1px dashed var(--pa-amber-border); padding-top: 2rem; }
+    .faq-title { font-size: 1.5rem; font-weight: bold; color: var(--pa-amber); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .faq-item { background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 1.5rem; margin-bottom: 1rem; }
+    .faq-q { font-weight: bold; color: var(--pa-amber); margin-bottom: 0.5rem; font-size: 1.1rem; }
+    .faq-a { color: var(--pa-text); font-size: 0.95rem; line-height: 1.6; }
+  </style>
+
+  <div class="terminal-container">
+    <header class="terminal-header">
+      <h1 class="terminal-h1">
+        <span>[排行榜系统]</span>
+        <span class="terminal-cursor"></span>
+      </h1>
+      <div class="terminal-subtitle">
+        <span class="highlight">> 输入指令: </span>拉取品牌序列，生成编辑推荐排位视图。<br>
+        <span class="highlight">> 系统警告: </span>本质上为本站<span class="highlight">编辑收录顺序</span>，不是客观速度打分。前几名为精选主推，其余按拼音列出。<br>
+        <span class="highlight">> 推荐操作: </span>如需按维度硬核比对，请调用 <a href="/duibi/" style="color:var(--pa-amber);text-decoration:underline;">[数据对比模块] (机场对比)</a> 模块。
       </div>
+    </header>
+
+    <div class="terminal-table-container">
+      <table class="terminal-table">
+        <thead>
+          <tr>
+            <th style="width: 5rem;">排名</th>
+            <th>品牌</th>
+            <th>门槛价格</th>
+            <th>可用流量</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rankedBrands.map((brand, index) => (
+            <tr>
+              <td>
+                <div class={`rank-cell ${index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-other'}`}>
+                  #{index + 1}
+                </div>
+              </td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  {brand.data.logo && (
+                    <img src={brand.data.logo} alt={`${brand.data.name} logo`} class="brand-logo" />
+                  )}
+                  <div>
+                    <div style="font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                      <a href={`/brands/${brand.id}/`} style="color: inherit; text-decoration: none;">{brand.data.name}</a>
+                      {brand.data.is_sponsored && <span class="sponsor-badge">主推</span>}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="data-number">
+                  {brand.id === 'sogo' ? '¥25/月起' : `${brand.data.currency} ${brand.data.price_monthly || '-'} / ${brand.data.price_yearly || '-'}`}
+                </div>
+                <div class="data-sub">{brand.id === 'sogo' ? '长周期套餐均有折算优惠' : '月付下限 / 年付参考'}</div>
+              </td>
+              <td>
+                <div class="data-number">{brand.id === 'sogo' ? '≈150 GB' : `${brand.data.bandwidth_gb} GB`}</div>
+              </td>
+              <td>
+                <a href={brand.data.register_link} target="_blank" rel="noopener sponsored" class="action-btn-exec">
+                  > 直达官网
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
 
-    <div class="prose prose-sm max-w-none text-gray-700 space-y-3 bg-white border border-gray-200 rounded-lg p-6">
-      <h2 class="text-lg font-bold text-gray-900 mt-0">机场排行榜是怎么排的，怎么看比较合适</h2>
-      <p>
-        这份"机场排行榜"的名次，本质上是本站的<strong>编辑收录顺序</strong>，不是靠测速跑分或用户打分算出来的客观质量排名——这点在上面的规则说明里已经写清楚了，这里再展开说说为什么要这样设计。
-      </p>
-      <p>
-        机场这类服务的真实体验（晚高峰速率、解锁效果、长期稳定性）本来就很难在没有持续实测的情况下客观量化，如果强行编一个"综合评分"排出第一到第 {rankedBrands.length} 名，反而是在用一个看起来很权威、实际没有依据的数字误导你。所以本站选择诚实地说明：前几名是编辑主推，后面按品牌名称拼音排序，不代表谁比谁质量更好。
-      </p>
-      <p>
-        如果你的决策标准是价格，去 <a href="/pianyi/" class="text-blue-600">便宜机场</a> 按入门价格由低到高看；如果想自己核算每 GB 成本，去 <a href="/xingjiabi/" class="text-blue-600">性价比机场</a> 看计算方法；如果想把几家放在一张表里逐项核对，去 <a href="/duibi/" class="text-blue-600">机场对比</a>。这份排行榜更适合"不知道从哪家看起"时，作为一个起点浏览，而不是最终的选购依据。
-      </p>
-    </div>
-
-    <div class="space-y-4">
-      {rankedBrands.map((brand, index) => (
-        <div class="bg-white shadow rounded-lg p-6 flex items-center relative overflow-hidden">
-          {index < 3 && (
-            <div class={`absolute top-0 left-0 w-1 h-full ${index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-gray-300' : 'bg-yellow-600'}`}></div>
-          )}
-          <div class="flex-shrink-0 mr-6 text-center w-12">
-            <span class={`text-3xl font-black ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : index === 2 ? 'text-yellow-700' : 'text-gray-200'}`}>
-              #{index + 1}
-            </span>
-          </div>
-          <div class="flex-grow">
-            <h2 class="text-xl font-bold text-gray-900 flex items-center">
-              <a href={`/brands/${brand.id}/`} class="hover:underline">{brand.data.name}</a>
-              {brand.data.is_sponsored && <span class="ml-2 text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100">本站主推</span>}
-            </h2>
-            <div class="mt-1 text-sm text-gray-500">
-              {brand.id === 'sogo' ? '基础版：¥25/月，每 30 天 150GB；小包-年付版：¥98/年，每 30 天 60GB。' : `月付记录：${brand.data.price_monthly ? `${brand.data.currency} ${brand.data.price_monthly}` : '资料未提供'}；年付记录：${brand.data.price_yearly ? `${brand.data.currency} ${brand.data.price_yearly}` : '资料未提供'}。流量记录：${brand.data.bandwidth_gb} GB`}
-            </div>
-          </div>
-          <div class="flex-shrink-0 ml-4">
-            <a href={brand.data.register_link} target="_blank" rel="noopener sponsored" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-gray-900 hover:bg-gray-800 focus:outline-none">
-              直达官网
-            </a>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    <div class="border-t border-gray-200 pt-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">常见问题</h2>
+    <div class="faq-container">
+      <h2 class="faq-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        规则与常见问题
+      </h2>
       <div class="space-y-4">
         {faqs.map(f => (
-          <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="font-semibold text-gray-900">{f.q}</div>
-            <div class="mt-1 text-sm text-gray-600">{f.a}</div>
+          <div class="faq-item">
+            <div class="faq-q">> {f.q}</div>
+            <div class="faq-a">{f.a}</div>
           </div>
         ))}
       </div>
     </div>
-
   </div>
-
 </BaseLayout>

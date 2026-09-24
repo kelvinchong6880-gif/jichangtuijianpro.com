@@ -46,70 +46,272 @@ const faqSchema = {
 
 <BaseLayout title="便宜机场推荐：低预算上车指南" description="预算有限？按绝对入门价格由低到高为您整理了最便宜的节点服务商。包含真实月付与年付折算说明，避免隐藏消费。" structuredData={faqSchema}>
   
-  <div class="max-w-4xl mx-auto space-y-8">
-    <div class="border-b border-gray-200 pb-5">
-      <h1 class="text-3xl font-extrabold text-gray-900">便宜机场</h1>
-      <p class="mt-3 text-xl text-gray-500">
-        按资料中的月付金额排序；没有月付记录时使用年付折算值，并显示必须一次支付的金额。不同价格和流量可能属于不同套餐，购买前请在品牌页与官网核对。
-      </p>
-    </div>
+  <style>
+    /* 便宜机场专属：黑金终端风格 */
+    .terminal-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    
+    .terminal-header {
+      position: relative;
+      border-bottom: 2px dashed var(--pa-amber-border);
+      padding-bottom: 2.5rem;
+      margin-bottom: 3rem;
+    }
 
-    <div class="prose prose-sm max-w-none text-gray-700 space-y-4">
-      <h2 class="text-xl font-bold text-gray-900">便宜机场推荐怎么选，不只是看月付数字</h2>
-      <p>
-        本页按<strong>绝对入门价格</strong>由低到高排序，方便预算有限的用户第一眼找到最便宜的选项。但"便宜"和"划算"是两回事——入门价最低的套餐，流量额度不一定够用。以本站当前收录的 {sortedBrands.length} 家品牌为例，入门价最低的是 <a href={`/brands/${sortedBrands[0]?.id}/`} class="text-blue-600">{sortedBrands[0]?.data.name}</a>（{sortedBrands[0]?.data.currency} {sortedBrands[0]?.entry.price.toFixed(1)}/月起），流量额度约 {sortedBrands[0]?.data.bandwidth_gb}GB，价格和流量都还算均衡。
-      </p>
-      <p>
-        但排序靠前不代表每 GB 更划算。本站资料里有品牌月付低至 ¥15，月流量却只有 30GB，折算下来每 GB 成本反而比一些月付 ¥20+、流量 100GB+ 的套餐更贵。所以只看"入门价格最低"这一项容易踩坑，建议：
-      </p>
-      <ul class="list-disc pl-5 space-y-1">
-        <li>先看流量额度是否够自己日常用量，再比价格</li>
-        <li>用"价格 ÷ 流量"粗算一下每 GB 成本，具体方法见 <a href="/xingjiabi/" class="text-blue-600">性价比机场</a> 页的计算说明</li>
-        <li>年付折算的月均价通常比月付更低，但需要一次性付一整年的钱，如果是第一次尝试某个品牌，谨慎选择年付</li>
-      </ul>
-      <p class="text-sm text-gray-500">以下列表按入门价格排序，具体套餐条款以品牌页和官网结算页为准。</p>
-    </div>
+    .terminal-h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--pa-amber);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      letter-spacing: 2px;
+    }
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      {sortedBrands.map(brand => (
-        <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 relative">
-          {brand.data.is_dummy && <span class="absolute top-2 right-2 text-[10px] bg-yellow-100 text-yellow-800 px-1 rounded">演示</span>}
-          <h3 class="text-xl font-bold text-gray-900 mb-2">
-            <a href={`/brands/${brand.id}/`} class="hover:text-blue-600">{brand.data.name}</a>
-          </h3>
-          <div class="flex items-baseline text-2xl font-extrabold text-blue-600 mb-4">
-            {brand.data.currency} {brand.entry.price.toFixed(1)}
-            <span class="ml-1 text-sm font-medium text-gray-500">/月估算</span>
+    .terminal-cursor {
+      display: inline-block;
+      width: 12px;
+      height: 2.5rem;
+      background-color: var(--pa-amber);
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .terminal-subtitle {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      color: var(--pa-text);
+      line-height: 1.8;
+      background: rgba(11, 10, 7, 0.6);
+      padding: 1rem;
+      border-left: 4px solid var(--pa-amber);
+    }
+
+    .info-box {
+      background-color: rgba(255, 176, 0, 0.03);
+      border: 1px solid var(--pa-amber-border);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 3rem;
+      position: relative;
+      box-shadow: inset 0 0 20px rgba(255, 176, 0, 0.02);
+    }
+    .info-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background-color: var(--pa-amber);
+    }
+
+    .highlight {
+      color: var(--pa-amber);
+      font-weight: bold;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    @media (min-width: 640px) { .grid-container { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .grid-container { grid-template-columns: repeat(3, 1fr); } }
+
+    .price-card {
+      background-color: rgba(255, 176, 0, 0.02);
+      border: 1px solid var(--pa-amber-border);
+      border-radius: 6px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .price-card:hover {
+      border-color: var(--pa-amber);
+      box-shadow: 0 4px 20px rgba(255, 176, 0, 0.15);
+      transform: translateY(-3px);
+      background-color: rgba(255, 176, 0, 0.04);
+    }
+    
+    /* TOP 1 特别样式 */
+    .top-1-card {
+      background-color: rgba(255, 176, 0, 0.08);
+      border-width: 2px;
+      border-color: var(--pa-amber);
+    }
+    .top-1-card::after {
+      content: "全网最低价";
+      position: absolute;
+      top: -12px;
+      right: 15px;
+      background: var(--pa-amber);
+      color: var(--pa-bg);
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--pa-text);
+      margin-bottom: 1rem;
+    }
+    .price-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--pa-amber);
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px dashed var(--pa-amber-border);
+      padding-bottom: 1rem;
+    }
+    .price-unit {
+      font-size: 0.9rem;
+      color: var(--pa-text-dim);
+      margin-left: 0.5rem;
+    }
+
+    .data-list {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--pa-text);
+      flex-grow: 1;
+      margin-bottom: 1.5rem;
+    }
+    .data-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .data-label { color: var(--pa-text-dim); }
+
+    .action-btn {
+      display: block;
+      text-align: center;
+      background: transparent;
+      border: 1px solid var(--pa-amber-border);
+      color: var(--pa-amber);
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      font-weight: bold;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .price-card:hover .action-btn {
+      background: var(--pa-amber);
+      color: var(--pa-bg);
+      border-color: var(--pa-amber);
+    }
+
+    .faq-container {
+      border-top: 1px solid var(--pa-amber-border);
+      padding-top: 2rem;
+    }
+    .faq-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--pa-amber);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .faq-item {
+      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--pa-amber-border);
+      border-radius: 4px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .faq-q { font-weight: bold; color: var(--pa-amber); margin-bottom: 0.5rem; font-size: 1.1rem; }
+    .faq-a { color: var(--pa-text); font-size: 0.95rem; line-height: 1.6; }
+  </style>
+
+  <div class="terminal-container">
+    
+    <header class="terminal-header">
+      <h1 class="terminal-h1">
+        <span>[低预算检索系统]</span>
+        <span class="terminal-cursor"></span>
+      </h1>
+      <div class="terminal-subtitle">
+        <span class="highlight">> 输入指令: </span>寻找预算范围内最便宜的机场，按绝对入门价格由低到高排列。<br>
+        <span class="highlight">> 系统分析: </span>不同价格和流量可能属于不同套餐。没有月付记录时使用年付折算值，并警示高首付门槛。排序靠前不代表每 GB 单价划算。
+      </div>
+    </header>
+
+    <section class="info-box">
+      <h2 class="text-xl font-bold mb-3 flex items-center gap-2" style="color: var(--pa-amber);">
+        <span class="highlight">⚠️</span> 避坑指南：不只是看月付数字
+      </h2>
+      <div class="space-y-4" style="color: var(--pa-text); font-size: 0.95rem; line-height: 1.7;">
+        <p>本页面按<span class="highlight">绝对入门价格</span>由低到高排序，方便预算有限的用户第一眼找到最便宜的选项。但“便宜”和“划算”是两回事——入门价最低的套餐，流量额度不一定够用。以当前收录的 {sortedBrands.length} 家品牌为例，极低月付的套餐往往流量极少（例如 30GB），折算每 GB 成本反而偏高。</p>
+        <ul style="list-style-type: square; margin-left: 1.5rem; color: var(--pa-text-dim);">
+          <li>先看流量额度是否够自己日常用量，再比价格。</li>
+          <li>年付折算的月均价通常比月付更低，但需要一次性付清，如果是第一次尝试，建议谨慎选择年付。</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="grid-container">
+      {sortedBrands.map((brand, index) => (
+        <div class={`price-card ${index === 0 ? 'top-1-card' : ''}`}>
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            {brand.data.logo && (
+              <img src={brand.data.logo} alt={`${brand.data.name} logo`} style="height: 28px; width: auto; max-width: 90px; object-fit: contain; border-radius: 4px; background: rgba(255,176,0,0.05); padding: 3px; border: 1px solid rgba(255,176,0,0.2);" />
+            )}
+            <h3 class="card-title" style="margin-bottom: 0;">
+              <a href={`/brands/${brand.id}/`} style="color: inherit; text-decoration: none;">{brand.data.name}</a>
+            </h3>
           </div>
-          <ul class="text-sm text-gray-600 space-y-2 mb-4">
-            <li class="flex items-start">
-              <span class="font-semibold w-20">付款门槛:</span>
-              <span class={brand.entry.type.includes('年付') ? 'text-red-500' : 'text-green-600'}>{brand.entry.type}</span>
-            </li>
-            <li class="flex items-start">
-              <span class="font-semibold w-20">可用流量:</span>
+          <div class="price-display">
+            {brand.entry.price.toFixed(1)}
+            <span class="price-unit">{brand.data.currency} / 估算</span>
+          </div>
+          <div class="data-list">
+            <div class="data-item">
+              <span class="data-label">付款门槛:</span>
+              <span style={brand.entry.type.includes('年付') ? "color:#ff4b4b" : "color:#00e572"}>{brand.entry.type}</span>
+            </div>
+            <div class="data-item">
+              <span class="data-label">可用流量:</span>
               <span>{brand.data.bandwidth_gb} GB</span>
-            </li>
-          </ul>
-          <a href={brand.data.register_link} target="_blank" rel="noopener sponsored" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-            前往官网
+            </div>
+          </div>
+          <a href={`/brands/${brand.id}/`} class="action-btn">
+            进入资料页核对
           </a>
         </div>
       ))}
     </div>
 
-    <div class="border-t border-gray-200 pt-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">常见问题</h2>
+    <div class="faq-container">
+      <h2 class="faq-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        F.A.Q / 常见问题
+      </h2>
       <div class="space-y-4">
         {faqs.map(f => (
-          <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="font-semibold text-gray-900">{f.q}</div>
-            <div class="mt-1 text-sm text-gray-600">{f.a}</div>
+          <div class="faq-item">
+            <div class="faq-q">> {f.q}</div>
+            <div class="faq-a">{f.a}</div>
           </div>
         ))}
       </div>
     </div>
 
   </div>
-
 </BaseLayout>
