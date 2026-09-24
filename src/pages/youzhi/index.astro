@@ -57,6 +57,9 @@ const faqSchema = {
       <p>
         建议在决定购买前，直接找官方客服问三件事：晚高峰速率大概是什么水平、退款政策具体条款、同时能登录几台设备，把回复截图保存，比看官网的宣传文案更可靠。
       </p>
+      <p class="text-sm text-gray-500 border-l-4 border-gray-200 pl-3">
+        统一说明：除特别标注外，以下收录品牌均未经本站独立测速或解锁验证，卡片中不再逐一重复这句话，具体资料核验日期以各卡片显示为准。
+      </p>
     </div>
 
     <div class="space-y-8">
@@ -66,9 +69,11 @@ const faqSchema = {
             <h2 class="text-xl font-bold text-gray-900">
               {brand.data.name}
             </h2>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              证据状态: {brand.data.evidence_status}
-            </span>
+            {brand.data.evidence_images && brand.data.evidence_images.length > 0 && (
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                有用户截图佐证
+              </span>
+            )}
           </div>
           <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -82,10 +87,16 @@ const faqSchema = {
                 </ul>
               </div>
               <div>
-                <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-2">证据范围</h4>
+                <h4 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-2">官方主打卖点</h4>
                 <div class="bg-gray-100 rounded p-4 text-sm text-gray-600 border border-gray-200">
-                  <p>{brand.data.evidence_status}。资料核验日期：{brand.data.verification_date}。</p>
-                  <p class="mt-1">暂无可复核的本站晚高峰测速和解锁记录，不据此判断稳定性。</p>
+                  {brand.data.features && brand.data.features.length > 0 ? (
+                    <ul class="space-y-1.5 list-disc pl-4">
+                      {brand.data.features.map((f: string) => (<li>{f}</li>))}
+                    </ul>
+                  ) : (
+                    <p>官方公开资料未提供进一步的卖点说明。</p>
+                  )}
+                  <p class="mt-2 text-xs text-gray-400">以上为官方资料原文，本站未逐一验证。资料核验日期：{brand.data.verification_date}。</p>
                 </div>
               </div>
             </div>
