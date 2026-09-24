@@ -31,22 +31,29 @@ const faqSchema = {
 };
 ---
 
+<style>
+    .article-content a { color: var(--pa-amber); text-decoration: underline; }
+    .article-content h2 { color: var(--pa-amber); }
+    .article-content strong { color: var(--pa-text); }
+    h1 { color: var(--pa-amber); font-size: 2rem; font-weight: 900; }
+</style>
+
 <BaseLayout
     title="V2rayN 机场推荐与订阅导入教程 2026"
     description="V2rayN 怎么下载安装、怎么导入机场订阅链接？介绍 Windows 端 V2rayN 客户端的使用步骤，并附本站收录的机场推荐列表。"
     structuredData={faqSchema}
 >
-    <div class="container">
+    <div>
         <div style="margin-bottom: 2rem;">
-            <div class="breadcrumbs" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
-                <a href="/" style="color: var(--primary); text-decoration: none;">首页</a> &gt; <a href="/tutorial/" style="color: var(--primary); text-decoration: none;">使用教程</a> &gt; <span>V2rayN</span>
+            <div class="breadcrumbs" style="margin-bottom: 1rem; color: var(--pa-text-dim); font-size: 0.9rem;">
+                <a href="/" style="color: var(--pa-amber); text-decoration: none;">首页</a> &gt; <a href="/tutorial/" style="color: var(--pa-amber); text-decoration: none;">使用教程</a> &gt; <span>V2rayN</span>
             </div>
             <h1>V2rayN 机场推荐与订阅导入教程</h1>
         </div>
 
-        <div class="article-content" style="background: var(--card-bg); padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <div class="article-content" style="background: rgba(255, 176, 0, 0.03); padding: 2rem; border-radius: 8px; border: 1px solid var(--pa-amber-border);">
 
-            <div style="background: var(--bg-alt); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+            <div style="background: rgba(255, 176, 0, 0.06); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--pa-amber);">
                 <strong>快速说明：</strong>V2rayN 是 Windows 平台上最常用的开源代理客户端之一，免费、界面简单，本身不含节点，需要搭配机场订阅使用。
             </div>
 
@@ -55,7 +62,7 @@ const faqSchema = {
 
             <h2>二、下载安装</h2>
             <ul>
-                <li><strong>下载来源：</strong>请前往 V2rayN 官方 GitHub Release 页面下载最新版本压缩包，解压后运行 <code>v2rayN.exe</code> 即可，无需安装。</li>
+                <li><strong>下载来源：</strong>请前往 V2rayN 官方 GitHub Release 页面下载最新版本压缩包，解压后运行 <code style="background: rgba(255,176,0,0.1); padding: 2px 6px; border-radius: 3px;">v2rayN.exe</code> 即可，无需安装。</li>
                 <li><strong>杀毒软件误报：</strong>部分安全软件会对代理工具误报，确认下载来源可靠后加入信任名单即可，不要长期关闭系统防护，详见 <a href="/tutorial/windows/">Windows 配置教程</a>中的安全提醒。</li>
             </ul>
 
@@ -78,14 +85,14 @@ const faqSchema = {
             ))}
 
             <h2>五、支持 V2rayN 的机场推荐</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">标准机场订阅链接普遍兼容 V2rayN，以下按本站收录顺序列出，具体价格与流量以各页面标注日期的数据为准，晚高峰速率与解锁效果本站未做独立实测。</p>
+            <p style="color: var(--pa-text-dim); font-size: 0.9rem; margin-bottom: 1.5rem;">标准机场订阅链接普遍兼容 V2rayN，以下按本站收录顺序列出，具体价格与流量以各页面标注日期的数据为准，晚高峰速率与解锁效果本站未做独立实测。</p>
 
             <div style="display: grid; gap: 1rem;">
                 {recommended.map(brand => (
-                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="border: 1px solid var(--pa-amber-border); border-radius: 8px; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <div>
-                            <a href={`/brands/${encodeURIComponent(brand.id)}/`} style="color: var(--primary); font-weight: bold; text-decoration: none; font-size: 1.05rem;">{brand.data.name}</a>
-                            <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                            <a href={`/brands/${encodeURIComponent(brand.id)}/`} style="color: var(--pa-amber); font-weight: bold; text-decoration: none; font-size: 1.05rem;">{brand.data.name}</a>
+                            <div style="color: var(--pa-text-dim); font-size: 0.85rem; margin-top: 0.25rem;">
                                 流量 {brand.data.bandwidth_gb}GB（{brand.data.bandwidth_reset_period === 'monthly' ? '按月重置' : brand.data.bandwidth_reset_period}） · {brand.data.evidence_status}
                             </div>
                         </div>

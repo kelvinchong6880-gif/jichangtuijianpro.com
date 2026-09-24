@@ -31,22 +31,29 @@ const faqSchema = {
 };
 ---
 
+<style>
+    .article-content a { color: var(--pa-amber); text-decoration: underline; }
+    .article-content h2 { color: var(--pa-amber); }
+    .article-content strong { color: var(--pa-text); }
+    h1 { color: var(--pa-amber); font-size: 2rem; font-weight: 900; }
+</style>
+
 <BaseLayout
     title="小火箭（Shadowrocket）机场推荐与订阅导入教程 2026"
     description="小火箭 Shadowrocket 怎么下载、怎么导入机场订阅？介绍 App Store 地区限制、订阅导入步骤，并附本站收录的机场推荐列表。"
     structuredData={faqSchema}
 >
-    <div class="container">
+    <div>
         <div style="margin-bottom: 2rem;">
-            <div class="breadcrumbs" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
-                <a href="/" style="color: var(--primary); text-decoration: none;">首页</a> &gt; <a href="/tutorial/" style="color: var(--primary); text-decoration: none;">使用教程</a> &gt; <span>小火箭</span>
+            <div class="breadcrumbs" style="margin-bottom: 1rem; color: var(--pa-text-dim); font-size: 0.9rem;">
+                <a href="/" style="color: var(--pa-amber); text-decoration: none;">首页</a> &gt; <a href="/tutorial/" style="color: var(--pa-amber); text-decoration: none;">使用教程</a> &gt; <span>小火箭</span>
             </div>
             <h1>小火箭（Shadowrocket）机场推荐与订阅导入教程</h1>
         </div>
 
-        <div class="article-content" style="background: var(--card-bg); padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <div class="article-content" style="background: rgba(255, 176, 0, 0.03); padding: 2rem; border-radius: 8px; border: 1px solid var(--pa-amber-border);">
 
-            <div style="background: var(--bg-alt); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+            <div style="background: rgba(255, 176, 0, 0.06); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid var(--pa-amber);">
                 <strong>快速说明：</strong>小火箭（Shadowrocket）是 iOS 平台上一款老牌付费代理客户端，界面简洁、设置灵活。使用前需要先有一份机场订阅。
             </div>
 
@@ -78,14 +85,14 @@ const faqSchema = {
             ))}
 
             <h2>五、支持小火箭的机场推荐</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">标准机场订阅链接普遍兼容小火箭，以下按本站收录顺序列出，具体价格与流量以各页面标注日期的数据为准，晚高峰速率与解锁效果本站未做独立实测。</p>
+            <p style="color: var(--pa-text-dim); font-size: 0.9rem; margin-bottom: 1.5rem;">标准机场订阅链接普遍兼容小火箭，以下按本站收录顺序列出，具体价格与流量以各页面标注日期的数据为准，晚高峰速率与解锁效果本站未做独立实测。</p>
 
             <div style="display: grid; gap: 1rem;">
                 {recommended.map(brand => (
-                    <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="border: 1px solid var(--pa-amber-border); border-radius: 8px; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <div>
-                            <a href={`/brands/${encodeURIComponent(brand.id)}/`} style="color: var(--primary); font-weight: bold; text-decoration: none; font-size: 1.05rem;">{brand.data.name}</a>
-                            <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                            <a href={`/brands/${encodeURIComponent(brand.id)}/`} style="color: var(--pa-amber); font-weight: bold; text-decoration: none; font-size: 1.05rem;">{brand.data.name}</a>
+                            <div style="color: var(--pa-text-dim); font-size: 0.85rem; margin-top: 0.25rem;">
                                 流量 {brand.data.bandwidth_gb}GB（{brand.data.bandwidth_reset_period === 'monthly' ? '按月重置' : brand.data.bandwidth_reset_period}） · {brand.data.evidence_status}
                             </div>
                         </div>

@@ -5,8 +5,25 @@ import { getBrands } from '../utils/data';
 const allBrands = await getBrands();
 const sogoBrand = allBrands.find(b => b.id === 'sogo');
 const otherBrands = allBrands.filter(b => b.id !== 'sogo');
+
+const structuredData = [
+    {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: '机场推荐PRO',
+        url: 'https://jichangtuijianpro.com/',
+        inLanguage: 'zh-CN',
+        description: '汇总机场官方套餐、价格与流量资料，提供性价比、便宜、优质、对比、排行榜等多维度筛选。'
+    },
+    {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: '机场推荐PRO',
+        url: 'https://jichangtuijianpro.com/'
+    }
+];
 ---
-<BaseLayout title="机场推荐PRO - 极客终端系统" description="硬核极客风格的机场推荐目录">
+<BaseLayout title="机场推荐PRO：25家机场套餐价格与流量对比 2026" description="机场推荐PRO：汇总25家机场官方套餐、价格与流量资料，提供性价比、便宜、优质、对比、排行榜等多维度筛选，及Clash/小火箭/V2rayN客户端教程。" structuredData={structuredData}>
 <style is:inline>
     /* Hero */
     .pa-hero {
