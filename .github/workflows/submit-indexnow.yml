@@ -1,0 +1,30 @@
+name: Submit to IndexNow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/content/brands/**.md'
+      - 'src/content/posts/**.md'
+      - 'src/pages/**.astro'
+      - 'scripts/submit-indexnow.js'
+  workflow_dispatch: # 允许手动在 Actions 页面触发
+
+jobs:
+  submit-indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Submit URLs to IndexNow
+        env:
+          INDEXNOW_KEY: '42957cf7b6ef4bd7aaf97916e9efb513'
+          SITE_DOMAIN: 'https://jichangtuijianpro.com'
+        run: node scripts/submit-indexnow.js
