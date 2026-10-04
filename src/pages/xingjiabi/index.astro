@@ -2,8 +2,9 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Promo from '../../components/Promo.astro';
 import BrandName from '../../components/BrandName.astro';
+import EditorPicks from '../../components/EditorPicks.astro';
 import {
-  getBrandViews, allPlans, perGB, monthlyEq, fmtGB, fmtPrice, faqSchema, itemListSchema, breadcrumbSchema,
+  getBrandViews, top10, allPlans, perGB, monthlyEq, fmtGB, fmtPrice, faqSchema, itemListSchema, breadcrumbSchema,
   UPDATED_LABEL, UPDATED_MONTH, billingLabel,
 } from '../../utils/data';
 
@@ -35,9 +36,10 @@ const oneTimeVal = allPlans(brands)
   .sort((a, c) => perGB(a.p)! - perGB(c.p)!)
   .slice(0, 8);
 const sogo = brands.find((b) => b.slug === 'sogo')!;
+const picks = top10(brands).slice(0, 6);
 
 const faq = [
-  { q: '性价比最高的机场是哪家？', a: `只看每 GB 价格，专线机场里最划算的是 ${champ.name} 的 ${champ.bestValue!.name}：${fmtPrice(champ.bestValue!.price)}/月 ${fmtGB(champ.bestValue!.traffic)}，约 ¥${perGB(champ.bestValue!)!.toFixed(3)}/GB。如果每月用不了那么多流量，按下面的流量分档表选更合适。` },
+  { q: '性价比最高的机场是哪家？', a: `综合价格、线路和稳定性，本站首推 Sogo云：优选版 ¥45/月 350GB（约 ¥${perGB(sogo.bestValue!)!.toFixed(3)}/GB），全 IEPL 专线，优惠码 ${sogo.promo}。只看每 GB 单价，专线机场里最低的是 ${champ.name} 的 ${champ.bestValue!.name}：${fmtPrice(champ.bestValue!.price)}/月 ${fmtGB(champ.bestValue!.traffic)}，约 ¥${perGB(champ.bestValue!)!.toFixed(3)}/GB。如果每月用不了那么多流量，按下面的流量分档表选更合适。` },
   { q: '机场性价比怎么算？', a: '用“每月价格 ÷ 每月流量”算出每 GB 价格。年付和季付先折成每月价格再算；不限时流量包用总价除以总流量。再结合线路类型（专线优先）判断。' },
   { q: '大流量套餐一定更划算吗？', a: '每 GB 单价通常更低，但只有用得完才划算。每月只用 100GB 的人买 1TB 套餐，实际每 GB 成本反而高好几倍。先估算自己的用量，再在对应流量档里选单价最低的。' },
   { q: '性价比机场和便宜机场有什么区别？', a: '便宜机场看的是“最少花多少钱能用上”，性价比机场看的是“同样的钱能买多少流量”。预算有限、用量小，看便宜机场；用量大、想长期用，看性价比。' },
@@ -45,7 +47,7 @@ const faq = [
 ];
 
 const schemas = [
-  itemListSchema(`${UPDATED_MONTH}性价比机场排行`, premiumBest.slice(0, 10)),
+  itemListSchema(`${UPDATED_MONTH}性价比机场推荐`, top10(brands)),
   faqSchema(faq),
   breadcrumbSchema([{ name: '性价比机场', path: '/xingjiabi/' }]),
 ];
@@ -60,20 +62,17 @@ const schemas = [
     <div class="k-eyebrow"><a href="/">机场推荐</a> / 性价比机场 · 更新于 <time datetime="2026-10-04">{UPDATED_LABEL}</time></div>
     <h1>性价比机场推荐 2026：按每 GB 价格排行</h1>
     <p class="k-lead">“性价比高”不是越便宜越好，而是同样的钱能买到多少流量、线路好不好。我们把 {n} 家机场的每个套餐都换算成 <strong>每 GB 价格</strong>，再按你实际需要的流量分档排名，一眼看出哪家最划算。</p>
-    <div class="k-callout">
-      <p style="margin:0 0 8px"><strong style="color:var(--pa-amber)">专线机场性价比第一：{champ.name}</strong> — {champ.bestValue!.name} {fmtPrice(champ.bestValue!.price)}/月 {fmtGB(champ.bestValue!.traffic)}，约 ¥{perGB(champ.bestValue!)!.toFixed(3)}/GB，{champ.lineLabel} 线路。</p>
-      <div class="k-actions"><a class="k-btn k-btn-solid" href={champ.register} target="_blank" rel="nofollow sponsored noopener">前往 {champ.name}</a><Promo code={champ.promo} /><a class="k-btn" href={champ.url}>看评测</a></div>
-    </div>
+    <EditorPicks list={picks} mode="value" title="性价比机场推荐 Top 6（编辑综合排名）" />
 
     <section class="k-section">
-      <h2>各家机场最划算的套餐</h2>
+      <h2>每 GB 单价排行：各家机场最划算的套餐</h2>
       <p>每家机场取每 GB 最便宜的一个周期套餐（年付折成每月计算），从低到高排序：</p>
       <div class="k-table-wrap">
         <table class="k-table">
           <thead><tr><th scope="col">#</th><th scope="col">机场</th><th scope="col">最划算套餐</th><th scope="col">价格</th><th scope="col">每月流量</th><th scope="col">每 GB</th><th scope="col">线路</th></tr></thead>
           <tbody>
             {brandBest.map((b, i) => (
-              <tr class={b.slug === champ.slug ? 'is-hl' : ''}>
+              <tr class={b.slug === 'sogo' ? 'is-hl' : ''}>
                 <td class="k-rank">{i + 1}</td>
                 <td><BrandName b={b} /></td>
                 <td>{b.bestValue!.name}</td>

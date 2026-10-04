@@ -1,0 +1,48 @@
+---
+// 编辑综合推荐榜（便宜机场 / 性价比机场页顶部）。顺序 = 本站编辑排名（top10），不是单纯按价格排序。
+import BrandName from './BrandName.astro';
+import Promo from './Promo.astro';
+import { perGB, fmtGB, fmtPrice, billingLabel, type BrandView } from '../utils/data';
+
+interface Props { list: BrandView[]; mode: 'cheap' | 'value'; title: string }
+const { list, mode, title } = Astro.props;
+const [first, ...rest] = list;
+
+const priceText = (b: BrandView) =>
+  mode === 'cheap'
+    ? `${b.entry ? `月付 ${fmtPrice(b.entry.price)} / ${fmtGB(b.entry.traffic)}` : '无月付'}${b.minYearly ? `，年付 ${fmtPrice(b.minYearly.price)} 起` : ''}`
+    : b.bestValue
+      ? `${b.bestValue.name} ${fmtPrice(b.bestValue.price)}/${billingLabel(b.bestValue.billing).replace('付', '')} ${fmtGB(b.bestValue.traffic)}，约 ¥${perGB(b.bestValue)!.toFixed(3)}/GB`
+      : '—';
+
+const firstReason =
+  first.slug === 'sogo'
+    ? mode === 'cheap'
+      ? '¥25/月就能用上 150GB 全 IEPL 专线，三年付折合 ¥15/月；晚高峰稳定、解锁 Netflix 和 ChatGPT，是“便宜又不卡”最均衡的选择。'
+      : '优选版 ¥45/月 350GB 约 ¥0.13/GB，在 300GB 左右的追剧用量里，价格、专线质量和稳定性最均衡；60+ 节点覆盖港台日新美，长期付费最低 6 折。'
+    : `${first.lineLabel} 线路，${priceText(first)}。`;
+---
+<section class="k-section" id="picks">
+  <h2>{title}</h2>
+  <div class="k-callout">
+    <p style="margin:0 0 6px"><span class="k-rank" style="margin-right:6px">1</span><strong style="color:var(--pa-amber)">首选：<a href={first.url}>{first.name}</a></strong> · {first.lineLabel}</p>
+    <p style="margin:0 0 6px" class="k-num">{priceText(first)}</p>
+    <p style="margin:0 0 10px">{firstReason}</p>
+    <div class="k-actions">
+      <a class="k-btn k-btn-solid" href={first.register} target="_blank" rel="nofollow sponsored noopener">前往 {first.name} 官网</a>
+      <Promo code={first.promo} />
+      <a class="k-btn" href={first.url}>看评测</a>
+    </div>
+  </div>
+  <div class="k-table-wrap">
+    <table class="k-table">
+      <thead><tr><th scope="col">#</th><th scope="col">机场</th><th scope="col">{mode === 'cheap' ? '价格' : '最划算套餐'}</th><th scope="col">线路</th><th scope="col">优惠码</th></tr></thead>
+      <tbody>
+        {rest.map((b, i) => (
+          <tr><td class="k-rank">{i + 2}</td><td><BrandName b={b} /></td><td class="k-num">{priceText(b)}</td><td>{b.lineLabel}</td><td><code class="k-num">{b.promo ?? '—'}</code></td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="k-muted">推荐榜综合价格、线路、晚高峰稳定性和解锁情况排序；下方各表按{mode === 'cheap' ? '价格' : '每 GB 单价'}客观排序，方便对照。</p>
+</section>
