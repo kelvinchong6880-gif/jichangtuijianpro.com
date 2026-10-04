@@ -1,0 +1,6 @@
+---
+import type { BrandView } from '../utils/data';
+export interface Props { b: BrandView; }
+const { b } = Astro.props;
+---
+<a class="k-brand" href={b.url}>{b.logo && <img src={b.logo} alt="" width="26" height="26" loading="lazy" decoding="async" />}<span>{b.name}</span></a>

@@ -1,0 +1,139 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Promo from '../../components/Promo.astro';
+import BrandName from '../../components/BrandName.astro';
+import {
+  getBrandViews, perGB, fmtGB, fmtPrice, faqSchema, breadcrumbSchema, billingLabel,
+  UPDATED_LABEL, UPDATED_MONTH, PAIRS, pairSlug, type BrandView,
+} from '../../utils/data';
+import { USAGE, cheapestFor, planPriceText, unlockText } from '../../utils/review';
+import { monthlyEq } from '../../utils/data';
+
+export async function getStaticPaths() {
+  const brands = await getBrandViews();
+  const by = Object.fromEntries(brands.map((b) => [b.slug, b]));
+  return PAIRS.filter(([a, c]) => by[a] && by[c]).map(([a, c]) => ({
+    params: { pair: pairSlug(a, c) },
+    props: { A: by[a] as BrandView, B: by[c] as BrandView },
+  }));
+}
+
+const { A, B } = Astro.props as { A: BrandView; B: BrandView };
+const pair = `${A.name}和${B.name}`;
+const rows = [
+  { k: '月付起步', a: A.entry ? `${fmtPrice(A.entry.price)} / ${fmtGB(A.entry.traffic)}` : '无', b: B.entry ? `${fmtPrice(B.entry.price)} / ${fmtGB(B.entry.traffic)}` : '无' },
+  { k: '年付最低', a: A.minYearly ? `${fmtPrice(A.minYearly.price)}（每月 ${fmtGB(A.minYearly.traffic)}）` : '无', b: B.minYearly ? `${fmtPrice(B.minYearly.price)}（每月 ${fmtGB(B.minYearly.traffic)}）` : '无' },
+  { k: '每月流量范围', a: `${fmtGB(A.minTraffic)}–${fmtGB(A.maxTraffic)}`, b: `${fmtGB(B.minTraffic)}–${fmtGB(B.maxTraffic)}` },
+  { k: '最划算套餐', a: A.bestValue ? `${A.bestValue.name}，¥${perGB(A.bestValue)!.toFixed(3)}/GB` : '—', b: B.bestValue ? `${B.bestValue.name}，¥${perGB(B.bestValue)!.toFixed(3)}/GB` : '—' },
+  { k: '线路', a: A.lineLabel, b: B.lineLabel },
+  { k: '不限时流量包', a: A.oneTime.length ? A.oneTime.map((p) => `${fmtGB(p.traffic)} ${fmtPrice(p.price)}`).join('、') : '无', b: B.oneTime.length ? B.oneTime.map((p) => `${fmtGB(p.traffic)} ${fmtPrice(p.price)}`).join('、') : '无' },
+  { k: '流媒体 / AI', a: unlockText(A), b: unlockText(B) },
+  { k: '节点地区', a: A.nodeRegions ?? '官网未列出', b: B.nodeRegions ?? '官网未列出' },
+  { k: '优惠码', a: A.promo ?? '无', b: B.promo ?? '无' },
+];
+
+const usage = USAGE.map((u) => {
+  const pa = cheapestFor(A, u.need);
+  const pb = cheapestFor(B, u.need);
+  const ma = pa ? monthlyEq(pa)! : Infinity;
+  const mb = pb ? monthlyEq(pb)! : Infinity;
+  const win = ma === mb ? '持平' : ma < mb ? A.name : B.name;
+  return { ...u, pa, pb, win };
+});
+const winsA = usage.filter((u) => u.win === A.name).length;
+const winsB = usage.filter((u) => u.win === B.name).length;
+const verdict: string[] = [];
+if (A.entry && B.entry && A.entry.price === B.entry.price) {
+  verdict.push(`月付入门价相同（${fmtPrice(A.entry.price)}/月），${A.name}给 ${fmtGB(A.entry.traffic)}，${B.name}给 ${fmtGB(B.entry.traffic)}。`);
+} else {
+  const cheaperEntry = A.entry && B.entry ? (A.entry.price < B.entry.price ? A : B) : A.entry ? A : B;
+  verdict.push(`月付入门：${cheaperEntry.name}更便宜（${fmtPrice(cheaperEntry.entry!.price)}/月起）。`);
+}
+const ties = usage.length - winsA - winsB;
+verdict.push(`四档用量里，${A.name}有 ${winsA} 档更便宜，${B.name}有 ${winsB} 档更便宜${ties ? `，${ties} 档持平` : ''}。`);
+if (A.oneTime.length !== B.oneTime.length) {
+  const w = A.oneTime.length > B.oneTime.length ? A : B;
+  verdict.push(`想要不限时备用包，${w.name}的选择更多（${w.oneTime.length} 款）。`);
+}
+if (A.premium && !B.premium) verdict.push(`线路上 ${A.name} 是 ${A.lineLabel} 专线，${B.name} 是 ${B.lineLabel}。`);
+if (B.premium && !A.premium) verdict.push(`线路上 ${B.name} 是 ${B.lineLabel} 专线，${A.name} 是 ${A.lineLabel}。`);
+if (A.premium && B.premium) verdict.push(`两家都是专线机场（${A.lineLabel} vs ${B.lineLabel}）。`);
+
+const faq = [
+  { q: `${pair}哪个好？`, a: verdict.join('') + ' 第一次购买建议先选月付试用。' },
+  { q: `${pair}哪个便宜？`, a: `月付最低：${A.name} ${A.entry ? fmtPrice(A.entry.price) : '无月付'}，${B.name} ${B.entry ? fmtPrice(B.entry.price) : '无月付'}。年付最低：${A.name} ${A.minYearly ? fmtPrice(A.minYearly.price) : '无'}，${B.name} ${B.minYearly ? fmtPrice(B.minYearly.price) : '无'}。` },
+  { q: `${A.name}和${B.name}能一起用吗？`, a: '可以。很多人买一家月付做主力，再买另一家的不限时包或年付小包做备用，主力出问题时切换订阅即可。' },
+];
+const schemas = [
+  faqSchema(faq),
+  breadcrumbSchema([{ name: '机场对比', path: '/duibi/' }, { name: `${A.name} vs ${B.name}`, path: `/duibi/${pairSlug(A.slug, B.slug)}/` }]),
+];
+---
+<BaseLayout
+  title={`${pair}哪个好？2026 ${A.name} vs ${B.name} 机场对比`}
+  description={`${pair}哪个好（${UPDATED_MONTH}更新）：对比两家机场的月付、年付、每月流量、每GB价格、线路、不限时包和解锁，按轻度、日常、追剧、重度用量给出选择建议，附优惠码。`}
+  structuredData={schemas}
+  ogType="article"
+>
+  <div class="k-page">
+    <div class="k-eyebrow"><a href="/">机场推荐</a> / <a href="/duibi/">机场对比</a> / {A.name} vs {B.name} · 更新于 {UPDATED_LABEL}</div>
+    <h1>{pair}哪个好？2026 机场对比</h1>
+    <p class="k-lead">{A.name}和{B.name}都是本站收录的热门机场。下面从价格、流量、线路、不限时包和解锁五个方面逐项对比，并按你的用量直接给出更便宜的那一家。</p>
+
+    <div class="k-callout">
+      <p style="margin:0"><strong style="color:var(--pa-amber)">结论：</strong>{verdict.join('')}</p>
+    </div>
+
+    <section class="k-section">
+      <h2>{A.name} vs {B.name} 参数对比</h2>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">对比项</th><th scope="col"><BrandName b={A} /></th><th scope="col"><BrandName b={B} /></th></tr></thead>
+          <tbody>
+            {rows.map((r) => <tr><th scope="row" style="background:none;color:var(--pa-text-dim)">{r.k}</th><td>{r.a}</td><td>{r.b}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="k-section">
+      <h2>按用量看：{pair}谁更便宜</h2>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">用量</th><th scope="col">{A.name}</th><th scope="col">{B.name}</th><th scope="col">更便宜</th></tr></thead>
+          <tbody>
+            {usage.map((u) => (
+              <tr>
+                <td><strong>{u.label}</strong>（{u.need}GB+）<br /><span class="k-muted">{u.desc}</span></td>
+                <td>{u.pa ? `${u.pa.name}：${planPriceText(u.pa)}` : '无合适档位'}</td>
+                <td>{u.pb ? `${u.pb.name}：${planPriceText(u.pb)}` : '无合适档位'}</td>
+                <td><strong>{u.win}</strong></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="k-section">
+      <h2>两家的完整套餐</h2>
+      <div class="k-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+        {[A, B].map((b) => (
+          <div class="k-card">
+            <BrandName b={b} />
+            <ul class="k-list" style="margin:4px 0">
+              {b.plans.map((p) => <li>{p.name}：{fmtPrice(p.price)}/{billingLabel(p.billing).replace('付', '')} · {fmtGB(p.traffic)}{p.billing === 'One-Time' ? '（不过期）' : '/月'}</li>)}
+            </ul>
+            <div class="k-actions"><Promo code={b.promo} /><a class="k-btn k-btn-solid" href={b.register} target="_blank" rel="nofollow sponsored noopener">前往官网</a><a href={b.url}>详细评测</a></div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="k-section">
+      <h2>常见问题</h2>
+      {faq.map((f) => <div class="k-qa"><h3>{f.q}</h3><p>{f.a}</p></div>)}
+      <p>还想比较其他机场？看 <a href="/duibi/">{'全部机场对比'}</a> 或 <a href="/paihangbang/">机场排行榜</a>。</p>
+    </section>
+  </div>
+</BaseLayout>

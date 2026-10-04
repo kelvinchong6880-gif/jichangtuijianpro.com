@@ -1,423 +1,140 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getBrands } from '../utils/data';
+import Promo from '../components/Promo.astro';
+import BrandName from '../components/BrandName.astro';
+import {
+  getBrandViews, top10, allPlans, perGB, fmtGB, fmtPrice, faqSchema, itemListSchema,
+  UPDATED_LABEL, UPDATED_MONTH, PAIRS, pairSlug,
+} from '../utils/data';
+import { unlockText } from '../utils/review';
 
-const allBrands = await getBrands();
-const sogoBrand = allBrands.find(b => b.id === 'sogo');
-const otherBrands = allBrands.filter(b => b.id !== 'sogo');
+const brands = await getBrandViews();
+const n = brands.length;
+const top = top10(brands);
+const sogo = brands.find((b) => b.slug === 'sogo')!;
+const bySlug = Object.fromEntries(brands.map((b) => [b.slug, b]));
 
-const structuredData = [
-    {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: '机场推荐PRO',
-        url: 'https://jichangtuijianpro.com/',
-        inLanguage: 'zh-CN',
-        description: '汇总机场官方套餐、价格与流量资料，提供性价比、便宜、优质、对比、排行榜等多维度筛选。'
-    },
-    {
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: '机场推荐PRO',
-        url: 'https://jichangtuijianpro.com/'
-    }
+const monthly = allPlans(brands).filter(({ p }) => p.billing === 'Monthly');
+const cheapest = [...monthly].sort((a, c) => a.p.price - c.p.price || (c.p.traffic ?? 0) - (a.p.traffic ?? 0))[0];
+const yearly = allPlans(brands).filter(({ p }) => p.billing === 'Yearly').sort((a, c) => a.p.price - c.p.price)[0];
+const bigValue = monthly
+  .filter(({ b, p }) => (p.traffic ?? 0) >= 1000 && b.premium)
+  .sort((a, c) => perGB(a.p)! - perGB(c.p)!)[0];
+const oneTime = allPlans(brands).filter(({ p }) => p.billing === 'One-Time').sort((a, c) => a.p.price - c.p.price)[0];
+const premiumCount = brands.filter((b) => b.premium).length;
+
+const picks = [
+  { tag: '综合首推', b: sogo, text: `月付 ¥${sogo.entry!.price} 起 ${fmtGB(sogo.entry!.traffic)}，全 IEPL 专线，晚高峰不降速。`, href: sogo.url },
+  { tag: '最便宜月付', b: cheapest.b, text: `${cheapest.p.name}：¥${cheapest.p.price}/月 ${fmtGB(cheapest.p.traffic)}。`, href: '/pianyi/' },
+  { tag: '年付最便宜', b: yearly.b, text: `${yearly.p.name}：¥${yearly.p.price}/年，每月 ${fmtGB(yearly.p.traffic)}。`, href: '/pianyi/' },
+  { tag: '大流量性价比', b: bigValue.b, text: `${bigValue.p.name}：¥${bigValue.p.price}/月 ${fmtGB(bigValue.p.traffic)}，约 ¥${perGB(bigValue.p)!.toFixed(3)}/GB。`, href: '/xingjiabi/' },
+  { tag: '不限时备用', b: oneTime.b, text: `${oneTime.p.name}：¥${oneTime.p.price} 买 ${fmtGB(oneTime.p.traffic)}，流量不过期。`, href: oneTime.b.url },
 ];
+
+const faq = [
+  { q: '2026 年机场推荐哪家？', a: `${UPDATED_MONTH}本站首推 Sogo云：月付 ¥25 起 150GB，全 IEPL 专线，节点覆盖香港、日本、新加坡、美国等 10 多个地区。预算更低可以看 ${cheapest.b.name}（¥${cheapest.p.price}/月起），流量大的可以看 ${bigValue.b.name}。完整名单见机场排行榜。` },
+  { q: '机场是什么？和 VPN 有什么区别？', a: '“机场”是代理订阅服务的俗称：服务商提供一批海外节点，你把订阅链接导入 Clash、小火箭等客户端就能使用。和传统 VPN 相比，机场节点更多、价格更低，在国内的连接成功率也更高。' },
+  { q: '新手买机场要注意什么？', a: '优先选 IPLC/IEPL 专线机场；分清“月付价”和“年付折合价”；按实际用量买流量；第一次只买一个月，满意后再年付。避开只写“¥8 起”却不写月付价格、或者倍率很高的机场。' },
+  { q: '便宜的机场能用吗？', a: `能用。本站收录的机场里，¥15–¥20/月 就能买到 100–150GB 的套餐，其中不少是专线。真正要小心的是没有月付、线路不写清楚的超低价机场。具体名单见便宜机场推荐。` },
+  { q: '机场多少流量够用？', a: '只查资料、用 AI：每月 50GB 足够；每天看 1–2 小时视频：约 150GB；经常追 4K 剧：300GB 以上；全家多设备共用：600GB 以上。' },
+  { q: '买了机场用什么软件？', a: 'Windows 和 Mac 用 Clash Verge 或 V2rayN，iPhone 用小火箭（Shadowrocket），安卓用 Clash Meta。本站有每个客户端的图文教程。' },
+];
+
+const schemas = [itemListSchema(`${UPDATED_MONTH}机场推荐 Top 10`, top), faqSchema(faq)];
 ---
-<BaseLayout title="机场推荐PRO：25家机场套餐价格与流量对比 2026" description="机场推荐PRO：汇总25家机场官方套餐、价格与流量资料，提供性价比、便宜、优质、对比、排行榜等多维度筛选，及Clash/小火箭/V2rayN客户端教程。" structuredData={structuredData}>
-<style is:inline>
-    /* Hero */
-    .pa-hero {
-        display: grid;
-        grid-template-columns: 1.2fr 0.9fr;
-        gap: 48px;
-        margin-bottom: 64px;
-    }
-    @media (max-width: 900px) {
-        .pa-hero { grid-template-columns: 1fr; }
-    }
-    .pa-cli-line { font-size: 14px; color: var(--pa-text-dim); margin-bottom: 16px; }
-    .pa-cursor { animation: pa-blink 1s step-end infinite; }
-    @keyframes pa-blink { 50% { opacity: 0; } }
-
-    .pa-hero-title {
-        font-size: 48px;
-        margin: 0 0 24px 0;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    .pa-pro-badge {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 30px;
-        border: 2px solid var(--pa-amber);
-        color: var(--pa-amber);
-        padding: 2px 8px;
-        font-weight: bold;
-    }
-
-    .pa-typewriter {
-        font-size: 16px;
-        white-space: pre-wrap;
-        min-height: 80px;
-        margin-bottom: 32px;
-        color: var(--pa-text);
-        line-height: 1.8;
-    }
-
-    .pa-hero-btns { display: flex; gap: 16px; }
-    .pa-btn {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 14px;
-        padding: 10px 24px;
-        cursor: pointer;
-        border: 1px solid var(--pa-amber);
-        transition: all 0.2s;
-        background: transparent;
-        color: var(--pa-amber);
-        text-decoration: none;
-        display: inline-block;
-    }
-    .pa-btn-solid { background: var(--pa-amber); color: var(--pa-bg); }
-    .pa-btn:hover { box-shadow: 0 0 15px var(--pa-amber-weak); }
-    .pa-btn-solid:hover { background: transparent; color: var(--pa-amber); }
-    .pa-btn-ghost:hover { background: var(--pa-amber-weak); }
-
-    /* 监测面板 */
-    .pa-monitor {
-        border: 1px solid var(--pa-amber-border);
-        background: rgba(255,176,0,0.02);
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-    .pa-monitor-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px dashed var(--pa-amber-border);
-        padding-bottom: 12px;
-        font-size: 14px;
-        color: var(--pa-amber);
-    }
-    .pa-live-dot {
-        width: 8px; height: 8px;
-        background-color: var(--pa-amber);
-        border-radius: 50%;
-        display: inline-block;
-        margin-left: 8px;
-        animation: pa-pulse 2s infinite;
-    }
-    @keyframes pa-pulse {
-        0% { box-shadow: 0 0 0 0 rgba(255,176,0, 0.4); }
-        70% { box-shadow: 0 0 0 6px rgba(255,176,0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(255,176,0, 0); }
-    }
-    .pa-nodes { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
-    .pa-node-row { display: flex; justify-content: space-between; }
-    .pa-ping { color: var(--pa-amber); }
-    .pa-canvas-container { width: 100%; height: 64px; border: 1px solid var(--pa-amber-border); position: relative; }
-    .pa-monitor-stats {
-        display: flex;
-        justify-content: space-between;
-        font-size: 12px;
-        color: var(--pa-text-dim);
-        border-top: 1px dashed var(--pa-amber-border);
-        padding-top: 12px;
-    }
-
-    /* 卡片网格 (品牌板块) */
-    .pa-section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 24px;
-        border-bottom: 1px solid var(--pa-amber-border);
-        padding-bottom: 12px;
-        margin-top: 64px;
-    }
-    .pa-h2 { font-size: 24px; margin: 0; color: var(--pa-amber); }
-    
-    .pa-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 24px;
-        margin-bottom: 64px;
-    }
-    .pa-card {
-        border: 1px solid var(--pa-amber-border) !important;
-        background: rgba(255,176,0,0.02) !important;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        transition: all 0.3s;
-        text-decoration: none;
-    }
-    .pa-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-        border-bottom: 1px dashed var(--pa-amber-border);
-        padding-bottom: 12px;
-    }
-    .pa-card-name {
-        font-size: 18px;
-        color: var(--pa-amber) !important;
-        font-weight: bold;
-    }
-    .pa-card-stats {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-    .pa-stat-box {
-        background: rgba(0,0,0,0.5);
-        border: 1px solid var(--pa-amber-border);
-        padding: 8px;
-        text-align: center;
-    }
-    .pa-stat-label { font-size: 11px; color: var(--pa-text-dim); margin-bottom: 4px; }
-    .pa-stat-val { font-size: 16px; color: var(--pa-text) !important; font-weight: bold; }
-    .pa-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--pa-amber); animation: pa-pulse 2s infinite; }
-</style>
-
-    <!-- 2. Hero -->
-    <section class="pa-hero">
-        <div class="pa-hero-left">
-            <div class="pa-cli-line">
-                root@cnblog:~/airport-recommend-pro$ ./run --mode=PRO<span class="pa-cursor">▮</span>
-            </div>
-            <h1 class="pa-hero-title pa-title-cn">
-                机场推荐 <span class="pa-pro-badge">PRO</span>
-            </h1>
-            <div class="pa-typewriter" id="paTypewriter"></div>
-            <div class="pa-hero-btns">
-                <a href="#brands-grid" class="pa-btn pa-btn-solid">查看所有品牌</a>
-                <a href="/tutorial/" class="pa-btn pa-btn-ghost">测速方法说明</a>
-            </div>
+<BaseLayout
+  title={`机场推荐2026：${n}家好用机场对比与Top 10排行（10月更新）`}
+  description={`2026机场推荐（${UPDATED_MONTH}更新）：整理${n}家机场的月付价格、流量、IPLC/IEPL专线与优惠码，按预算和用量推荐。本月首推Sogo云：¥25/月150GB全IEPL专线，晚高峰不降速。`}
+  structuredData={schemas}
+>
+  <div class="k-page">
+    <section>
+      <div class="k-eyebrow">更新于 <time datetime="2026-10-04">{UPDATED_LABEL}</time> · 收录 {n} 家机场</div>
+      <h1>机场推荐 2026：{n} 家好用机场价格、线路与流量对比</h1>
+      <p class="k-lead">不知道买哪家机场？我们把 {n} 家机场官网的套餐逐一整理成表：月付多少钱、每月多少流量、是不是 IPLC/IEPL 专线、能不能看 Netflix 和用 ChatGPT、有没有优惠码。其中 {premiumCount} 家是专线机场。按预算和用量对号入座，几分钟就能选好。</p>
+      <div class="k-callout">
+        <p style="margin:0 0 10px"><strong style="color:var(--pa-amber)">本月首推：Sogo云</strong> — ¥25/月 150GB，月付全 IEPL 专线，单节点峰值 2.5Gbps，晚高峰不降速，原生 IP 解锁 Netflix / ChatGPT。</p>
+        <div class="k-actions">
+          <a class="k-btn k-btn-solid" href={sogo.register} target="_blank" rel="nofollow sponsored noopener">前往 Sogo云 官网</a>
+          <Promo code={sogo.promo} />
+          <a class="k-btn" href={sogo.url}>看 Sogo云 评测</a>
         </div>
-
-        <div class="pa-hero-right">
-            <div class="pa-monitor">
-                <div class="pa-monitor-header">
-                    <span>SYSTEM STATUS</span>
-                    <span style="display:flex; align-items:center;">STATIC<span class="pa-live-dot" style="animation:none; opacity:0.5; background:var(--pa-amber);"></span></span>
-                </div>
-                <div class="pa-nodes">
-                    <div class="pa-node-row"><span>收录原则</span> <span style="color:var(--pa-amber)">客观汇总</span></div>
-                    <div class="pa-node-row"><span>数据来源</span> <span style="color:var(--pa-amber)">公开资料/用户截图</span></div>
-                    <div class="pa-node-row"><span>更新机制</span> <span style="color:var(--pa-amber)">定期人工核对</span></div>
-                </div>
-                <div class="pa-canvas-container">
-                    <canvas id="paCanvas" width="420" height="64" style="width:100%; height:64px;"></canvas>
-                </div>
-                <div class="pa-monitor-stats">
-                    <span>{allBrands.length} 收录品牌</span>
-                    <span>持续更新中</span>
-                    <span>客观资料收录</span>
-                </div>
-            </div>
-        </div>
+      </div>
     </section>
 
-    <!-- 3. Sogo 主推 (终端大面板风格) -->
-    {sogoBrand && (
-        <section>
-            <div class="pa-section-header">
-                <h2 class="pa-h2 pa-title-cn">站长特别推荐：Sogo云</h2>
-            </div>
-            <div class="pa-card" style="background: rgba(255,176,0,0.05) !important; border-color: var(--pa-amber) !important;">
-                <div class="pa-card-header" style="border-bottom-color: var(--pa-amber); justify-content: flex-start; gap: 16px;">
-                    {sogoBrand.data.logo && (
-                        <img src={sogoBrand.data.logo} alt={sogoBrand.data.name} style="width:48px; height:48px; border-radius:8px; object-fit:contain; background:rgba(255,255,255,0.9); padding:4px;" />
-                    )}
-                    <span class="pa-card-name" style="font-size: 24px;">[站长主推] {sogoBrand.data.name}</span>
-                    <span class="pa-status" style="margin-left: auto;"></span>
-                </div>
-                
-                <div style="border-top: 1px dashed var(--pa-amber-border); padding-top: 16px; margin-bottom: 24px; margin-top: 16px;">
-                    {sogoBrand.data.features && sogoBrand.data.features.length > 0 ? sogoBrand.data.features.slice(0,2).map(feature => {
-                        const parts = feature.split('：');
-                        const label = parts.length > 1 ? parts[0] : '特性';
-                        const val = parts.length > 1 ? parts[1] : feature;
-                        return (
-                            <div style="display:flex; margin-bottom:8px; font-size:14px;">
-                                <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[{label}]</span>
-                                <span style="color:var(--pa-text);">{val}</span>
-                            </div>
-                        );
-                    }) : (
-                        <>
-                            <div style="display:flex; margin-bottom:8px; font-size:14px;">
-                                <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[流量周期]</span>
-                                <span style="color:var(--pa-text);">{sogoBrand.data.bandwidth_reset_period === 'monthly' ? '每月重置' : '按量计费'}</span>
-                            </div>
-                            <div style="display:flex; margin-bottom:8px; font-size:14px;">
-                                <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[最后核验]</span>
-                                <span style="color:var(--pa-text);">{sogoBrand.data.verification_date || '未知'}</span>
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 24px;">
-                    <div class="pa-stat-box">
-                        <div class="pa-stat-label">最低价格</div>
-                        <div class="pa-stat-val" style="color: var(--pa-amber) !important; font-size: 24px;">{sogoBrand.data.price_monthly ? '¥' + sogoBrand.data.price_monthly + '/月起' : (sogoBrand.data.price_yearly ? '¥' + sogoBrand.data.price_yearly + '/年起' : '按量计费')}</div>
-                    </div>
-                    <div class="pa-stat-box">
-                        <div class="pa-stat-label">月流量</div>
-                        <div class="pa-stat-val" style="font-size: 24px;">{sogoBrand.data.bandwidth_gb} GB</div>
-                    </div>
-                    <div class="pa-stat-box">
-                        <div class="pa-stat-label">系统状态</div>
-                        <div class="pa-stat-val" style="color: #4ade80 !important;">Running OK</div>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-                    <a href={sogoBrand.data.register_link} target="_blank" rel="noopener" class="pa-btn pa-btn-solid" style="flex:1; text-align:center;">前往官网</a>
-                    <a href={`/ceping/${encodeURIComponent(sogoBrand.id)}/`} class="pa-btn pa-btn-ghost" style="flex:1; text-align:center;">查看评测</a>
-                </div>
-            </div>
-        </section>
-    )}
-
-    <!-- 4. 其他品牌网格 -->
-    <section id="brands-grid">
-        <div class="pa-section-header">
-            <h2 class="pa-h2 pa-title-cn">所有收录品牌</h2>
-        </div>
-        <div class="pa-grid">
-            {otherBrands.map((brand, i) => (
-                <div class="pa-card">
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--pa-amber); margin-bottom:8px;">
-                        <span>>> NO.{i+1}</span>
-                        <span>{brand.data.price_monthly ? '¥' + brand.data.price_monthly + '/月起' : (brand.data.price_yearly ? '¥' + brand.data.price_yearly + '/年起' : '按量计费')}</span>
-                    </div>
-                    
-                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
-                        {brand.data.logo && (
-                            <img src={brand.data.logo} alt={brand.data.name} style="width:32px; height:32px; border-radius:4px; object-fit:contain; background:rgba(255,255,255,0.9); padding:2px;" />
-                        )}
-                        <div style="font-size:24px; font-weight:bold; color:var(--pa-amber);">
-                            {brand.data.name}
-                        </div>
-                    </div>
-                    
-                    <div style="border-top: 1px dashed var(--pa-amber-border); padding-top: 16px; margin-bottom: 24px; min-height: 80px;">
-                        {brand.data.features && brand.data.features.length > 0 ? brand.data.features.slice(0,2).map(feature => {
-                            const parts = feature.split('：');
-                            const label = parts.length > 1 ? parts[0] : '特性';
-                            const val = parts.length > 1 ? parts[1] : feature;
-                            return (
-                                <div style="display:flex; margin-bottom:8px; font-size:12px;">
-                                    <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[{label}]</span>
-                                    <span style="color:var(--pa-text); display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">{val}</span>
-                                </div>
-                            );
-                        }) : (
-                            <>
-                                <div style="display:flex; margin-bottom:8px; font-size:12px;">
-                                    <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[流量周期]</span>
-                                    <span style="color:var(--pa-text);">{brand.data.bandwidth_reset_period === 'monthly' ? '每月重置' : '按量计费'}</span>
-                                </div>
-                                <div style="display:flex; margin-bottom:8px; font-size:12px;">
-                                    <span style="color:var(--pa-amber); width:80px; flex-shrink:0;">[最后核验]</span>
-                                    <span style="color:var(--pa-text);">{brand.data.verification_date || '未知'}</span>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                    
-                    <div style="display: flex; gap: 8px; margin-top: auto;">
-                        <a href={brand.data.register_link} target="_blank" rel="noopener" class="pa-btn pa-btn-solid" style="flex:1; text-align:center; padding: 6px; font-size: 12px; color: var(--pa-bg) !important;">前往官网</a>
-                        <a href={`/ceping/${encodeURIComponent(brand.id)}/`} class="pa-btn pa-btn-ghost" style="flex:1; text-align:center; padding: 6px; font-size: 12px;">查看评测</a>
-                    </div>
-                </div>
+    <section class="k-section" id="top10">
+      <h2>{UPDATED_MONTH}机场推荐 Top 10</h2>
+      <p>按线路质量、月付价格、每 GB 成本和套餐灵活度综合挑选。想看每家的推荐理由，请看 <a href="/paihangbang/">机场排行榜</a>。</p>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">排名</th><th scope="col">机场</th><th scope="col">月付起步</th><th scope="col">线路</th><th scope="col">流量范围</th><th scope="col">解锁</th><th scope="col">优惠码</th><th scope="col"><span class="sr-only">操作</span></th></tr></thead>
+          <tbody>
+            {top.map((b, i) => (
+              <tr class={i === 0 ? 'is-hl' : ''}>
+                <td class="k-rank">#{i + 1}</td>
+                <td><BrandName b={b} /></td>
+                <td class="k-num">{b.entry ? `${fmtPrice(b.entry.price)}/${fmtGB(b.entry.traffic)}` : '—'}</td>
+                <td>{b.lineLabel}</td>
+                <td class="k-num">{fmtGB(b.minTraffic)}–{fmtGB(b.maxTraffic)}</td>
+                <td>{unlockText(b)}</td>
+                <td><code class="k-num">{b.promo ?? '—'}</code></td>
+                <td><a class="k-btn" style="padding:4px 10px" href={b.register} target="_blank" rel="nofollow sponsored noopener">官网</a></td>
+              </tr>
             ))}
-        </div>
+          </tbody>
+        </table>
+      </div>
     </section>
 
-    <!-- 5. FAQ -->
-    <section id="faq" style="margin-top: 48px;">
-        <div class="pa-section-header">
-            <h2 class="pa-h2 pa-title-cn">常见问题</h2>
-        </div>
-        <div style="display: grid; gap: 16px; max-width: 760px;">
-            <div style="border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 16px 20px;">
-                <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">&gt;&gt; 怎么判断一个机场好不好用？</div>
-                <div style="color: var(--pa-text); font-size: 14px; line-height: 1.7;">主要看晚高峰会不会降速、能不能解锁常用的流媒体和 AI 工具、出问题时官方响应速度。本站按 <a href="/xingjiabi/" style="color: var(--pa-amber);">性价比</a>、<a href="/pianyi/" style="color: var(--pa-amber);">价格</a>、<a href="/youzhi/" style="color: var(--pa-amber);">线路质量</a>、<a href="/liumeijiesuo/" style="color: var(--pa-amber);">流媒体解锁能力</a> 四个维度分别整理，可按自己最在意的维度挑选，具体表现以本站已公开的截图证据和资料来源为准。</div>
-            </div>
-            <div style="border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 16px 20px;">
-                <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">&gt;&gt; 好用的梯子（机场）怎么选？</div>
-                <div style="color: var(--pa-text); font-size: 14px; line-height: 1.7;">"梯子"通常就是指机场这类代理订阅服务。建议先看 <a href="/paihangbang/" style="color: var(--pa-amber);">机场排行榜</a> 和 <a href="/duibi/" style="color: var(--pa-amber);">机场对比</a>，用最短付费周期试用后再决定是否长期订阅，避免一次性年付踩坑。</div>
-            </div>
-            <div style="border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 16px 20px;">
-                <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">&gt;&gt; 用什么客户端软件导入机场订阅？</div>
-                <div style="color: var(--pa-text); font-size: 14px; line-height: 1.7;">Windows/Mac/Linux 常用 <a href="/clash/" style="color: var(--pa-amber);">Clash</a> 或 <a href="/v2rayn/" style="color: var(--pa-amber);">V2rayN</a>，iOS 常用 <a href="/xiaohuojian/" style="color: var(--pa-amber);">小火箭 (Shadowrocket)</a>，Android 可参考 <a href="/tutorial/android/" style="color: var(--pa-amber);">安卓教程</a>。</div>
-            </div>
-        </div>
+    <section class="k-section">
+      <h2>按需求推荐机场</h2>
+      <div class="k-grid">
+        {picks.map((x) => (
+          <a class="k-card" href={x.href} style="text-decoration:none">
+            <span class="k-tag">{x.tag}</span>
+            <strong>{x.b.name}</strong>
+            <span class="k-muted">{x.text}</span>
+          </a>
+        ))}
+      </div>
+      <p style="margin-top:16px">更多分类：<a href="/xingjiabi/">性价比机场</a> · <a href="/pianyi/">便宜机场</a> · <a href="/youzhi/">优质机场</a> · <a href="/liumeijiesuo/">Netflix / ChatGPT 解锁机场</a> · <a href="/duibi/">机场对比</a></p>
     </section>
 
-<script is:inline>
-    // 打字机效果
-    const twText = "基于官方公开资料与用户截图进行汇总\n提供客观的套餐参数与价格比对\n数据最后核对更新于 2026.09 … done.";
-    const twEl = document.getElementById('paTypewriter');
-    let twIdx = 0;
-    function paType() {
-        if (!twEl) return;
-        if (twIdx < twText.length) {
-            twEl.innerHTML = twText.substring(0, twIdx + 1) + '<span style="color:var(--pa-amber); animation: pa-blink 1s step-end infinite;">_</span>';
-            twIdx++;
-            setTimeout(paType, 42);
-        } else {
-            twEl.innerHTML = twText; 
-        }
-    }
-    setTimeout(paType, 500);
+    <section class="k-section">
+      <h2>机场推荐怎么选？记住这 4 点</h2>
+      <h3>1. 线路：优先 IPLC / IEPL 专线</h3>
+      <p>普通中转线路走公网国际出口，晚上 8–11 点容易掉速。IPLC 和 IEPL 是跨境专线，延迟低、晚高峰稳。本站收录的 {n} 家里有 {premiumCount} 家专线机场，详见 <a href="/knowledge/iplc-iepl/">IPLC 与 IEPL 是什么</a>。</p>
+      <h3>2. 价格：看月付，不要只看“¥8 起”</h3>
+      <p>“¥8 起”通常是年付总价除以 12，而且每月只有 40–60GB。真正的月付价格在 ¥15–¥30 之间。很多机场年付 8 折、三年付 6 折，先月付试用再长付最划算。想按单价比，看 <a href="/xingjiabi/">性价比机场排行</a>。</p>
+      <h3>3. 流量：按实际用量买</h3>
+      <p>查资料和用 AI 每月 50GB 够用，天天刷视频约 150GB，追 4K 剧要 300GB 以上，全家共用 600GB 起步。偶尔才用的，选 <a href="/knowledge/unlimited/">不限时流量包</a> 更省。</p>
+      <h3>4. 售后：先小额试用</h3>
+      <p>机场行业流动性大，再好的机场也建议先买一个月。看 <a href="/knowledge/risk-guide/">机场跑路风险防范</a>，了解怎么降低风险。</p>
+    </section>
 
-    // Canvas 折线图
-    const canvas = document.getElementById('paCanvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        const MAX_POINTS = 46;
-        let dataPoints = Array(MAX_POINTS).fill(30);
+    <section class="k-section">
+      <h2>热门机场对比</h2>
+      <p>拿不定主意时，看看两家放在一起比：</p>
+      <div class="k-grid">
+        {PAIRS.map(([a, c]) => (
+          <a class="k-card" href={`/duibi/${pairSlug(a, c)}/`} style="text-decoration:none">
+            <strong>{bySlug[a].name} 和 {bySlug[c].name} 哪个好？</strong>
+            <span class="k-muted">价格、流量、线路逐项对比</span>
+          </a>
+        ))}
+      </div>
+    </section>
 
-        function paDrawChart() {
-            const last = dataPoints[dataPoints.length - 1];
-            let next = last + (Math.random() * 20 - 10);
-            if(next < 10) next = 10;
-            if(next > 54) next = 54;
-            dataPoints.shift();
-            dataPoints.push(next);
+    <section class="k-section">
+      <h2>买完机场怎么用</h2>
+      <p>把订阅链接导入客户端即可：<a href="/clash/">Clash 教程</a>（Windows / Mac / 安卓）、<a href="/xiaohuojian/">小火箭教程</a>（iPhone）、<a href="/v2rayn/">V2rayN 教程</a>（Windows）。完整的分平台说明见 <a href="/tutorial/">使用教程</a>。</p>
+    </section>
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.beginPath();
-            const step = canvas.width / (MAX_POINTS - 1);
-            ctx.moveTo(0, canvas.height);
-            for(let i=0; i<MAX_POINTS; i++) {
-                ctx.lineTo(i * step, canvas.height - dataPoints[i]);
-            }
-            ctx.lineTo(canvas.width, canvas.height);
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(255, 176, 0, 0.1)';
-            ctx.fill();
-
-            ctx.beginPath();
-            for(let i=0; i<MAX_POINTS; i++) {
-                if(i === 0) ctx.moveTo(i * step, canvas.height - dataPoints[i]);
-                else ctx.lineTo(i * step, canvas.height - dataPoints[i]);
-            }
-            ctx.strokeStyle = '#ffb000';
-            ctx.lineWidth = 1.6;
-            ctx.stroke();
-        }
-        setInterval(paDrawChart, 900);
-        paDrawChart();
-    }
-</script>
-
+    <section class="k-section k-faq">
+      <h2>机场推荐常见问题</h2>
+      {faq.map((f) => (
+        <div class="k-qa"><h3>{f.q}</h3><p>{f.a}</p></div>
+      ))}
+    </section>
+  </div>
 </BaseLayout>

@@ -15,17 +15,22 @@ if (isProd && !isPreviewEnv && SITE_DOMAIN.includes('example-jichang.com')) {
 
 export default defineConfig({
   site: SITE_DOMAIN,
+  build: { inlineStylesheets: 'always' },
   vite: {
     plugins: [tailwindcss()]
   },
   integrations: [
     mdx(), 
     sitemap({
-      filter: (page) => {
-        // 如果是正式构建，禁止演示相关页面进入 sitemap
-        // 注意：我们将在 getStaticPaths 和页面获取数据时排除 dummy，
-        // 这里作为第二道防线。由于占位数据可能被过滤掉，这里主要拦截可能遗漏的路径。
-        return true; 
+      filter: (page) => !page.includes('/404'),
+      // 每次更新数据后，把这个日期改成当天（与 src/utils/data.ts 的 UPDATED 保持一致）
+      serialize(item) {
+        const path = new URL(item.url).pathname;
+        item.lastmod = new Date('2026-10-04T00:00:00+08:00').toISOString();
+        const core = ['/', '/paihangbang/', '/xingjiabi/', '/pianyi/', '/duibi/'];
+        item.priority = path === '/' ? 1.0 : core.includes(path) ? 0.9 : path.startsWith('/brands/') || path.startsWith('/duibi/') ? 0.8 : 0.6;
+        item.changefreq = core.includes(path) ? 'weekly' : 'monthly';
+        return item;
       }
     }),
     {

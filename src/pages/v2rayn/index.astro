@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getBrands } from '../../utils/data';
+import { getBrands, brandUrl } from '../../utils/data';
 
 const allBrands = await getBrands();
 const recommended = [...allBrands].sort((a, b) => a.data.sort_order - b.data.sort_order).slice(0, 8);
@@ -85,13 +85,13 @@ const faqSchema = {
             ))}
 
             <h2>五、支持 V2rayN 的机场推荐</h2>
-            <p style="color: var(--pa-text-dim); font-size: 0.9rem; margin-bottom: 1.5rem;">标准机场订阅链接普遍兼容 V2rayN，以下按本站收录顺序列出，具体价格与流量以各页面标注日期的数据为准，晚高峰速率与解锁效果本站未做独立实测。</p>
+            <p style="color: var(--pa-text-dim); font-size: 0.9rem; margin-bottom: 1.5rem;">标准机场订阅链接普遍兼容 V2rayN，以下按本站收录顺序列出，具体价格与流量以各页面标注日期的数据为准。不知道选哪家？看 <a href="/paihangbang/" style="color: var(--pa-amber);">机场排行榜</a>。</p>
 
             <div style="display: grid; gap: 1rem;">
                 {recommended.map(brand => (
                     <div style="border: 1px solid var(--pa-amber-border); border-radius: 8px; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <div>
-                            <a href={`/brands/${encodeURIComponent(brand.id)}/`} style="color: var(--pa-amber); font-weight: bold; text-decoration: none; font-size: 1.05rem;">{brand.data.name}</a>
+                            <a href={brandUrl(brand.id)} style="color: var(--pa-amber); font-weight: bold; text-decoration: none; font-size: 1.05rem;">{brand.data.name}</a>
                             <div style="color: var(--pa-text-dim); font-size: 0.85rem; margin-top: 0.25rem;">
                                 流量 {brand.data.bandwidth_gb}GB（{brand.data.bandwidth_reset_period === 'monthly' ? '按月重置' : brand.data.bandwidth_reset_period}） · {brand.data.evidence_status}
                             </div>

@@ -1,317 +1,133 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getBrands } from '../../utils/data';
+import BrandName from '../../components/BrandName.astro';
+import {
+  getBrandViews, allPlans, perGB, monthlyEq, fmtGB, fmtPrice, faqSchema, itemListSchema, breadcrumbSchema,
+  UPDATED_LABEL, UPDATED_MONTH,
+} from '../../utils/data';
 
-const allBrands = await getBrands();
+const brands = await getBrandViews();
+const n = brands.length;
+const monthly = allPlans(brands).filter(({ p }) => p.billing === 'Monthly');
+const under20 = monthly.filter(({ p }) => p.price <= 20).sort((a, c) => a.p.price - c.p.price || (c.p.traffic ?? 0) - (a.p.traffic ?? 0));
+const under30 = monthly.filter(({ p }) => p.price > 20 && p.price <= 30).sort((a, c) => a.p.price - c.p.price || (c.p.traffic ?? 0) - (a.p.traffic ?? 0));
+const yearly = allPlans(brands).filter(({ p }) => p.billing === 'Yearly').sort((a, c) => a.p.price - c.p.price);
+const oneTime = allPlans(brands).filter(({ p }) => p.billing === 'One-Time').sort((a, c) => a.p.price - c.p.price).slice(0, 8);
+const cheapestBrands = brands.filter((b) => b.entry).sort((a, c) => a.entry!.price - c.entry!.price || (c.entry!.traffic ?? 0) - (a.entry!.traffic ?? 0));
+const cheapPremium = cheapestBrands.filter((b) => b.premium);
+const lowest = cheapestBrands[0];
+const lowestYear = yearly[0];
+const sogo = brands.find((b) => b.slug === 'sogo')!;
+const wuyou = brands.find((b) => b.slug === 'wuyou');
 
-const getLowestEntry = (brand: any) => {
-  if (brand.data.price_monthly) return { price: brand.data.price_monthly, type: '月付' };
-  if (brand.data.price_yearly) return { price: brand.data.price_yearly / 12, type: '年付折算(需一次性支付 ' + brand.data.price_yearly + ')' };
-  return { price: 9999, type: '未知' };
-};
-
-const sortedBrands = allBrands
-  .map(b => ({ ...b, entry: getLowestEntry(b) }))
-  .sort((a, b) => a.entry.price - b.entry.price);
-
-const faqs = [
-  {
-    q: '最便宜的机场大概多少钱一个月？',
-    a: `按本站当前收录资料，入门价格最低的是 ${sortedBrands[0]?.data.name}，约 ${sortedBrands[0]?.data.currency} ${sortedBrands[0]?.entry.price.toFixed(1)}/月，但具体套餐条款和是否长期有效以官网结算页为准。`
-  },
-  {
-    q: '便宜机场靠谱吗，会不会跑路？',
-    a: '价格便宜和跑不跑路没有必然联系，本站也没有能力预测哪家会停止运营。比较稳妥的做法是第一次先用最短付费周期（月付或更短）试用，不要一上来就年付大额投入，观察一段时间后再决定是否长期订阅。'
-  },
-  {
-    q: '便宜机场和贵的机场区别在哪？',
-    a: '价格差异通常来自线路类型（专线 vs 普通中转）、节点数量和覆盖地区、客服响应速度等方面的官方宣称，但本站未对这些逐一独立实测，具体差异建议自己试用对比。'
-  },
-  {
-    q: '便宜机场适合新手吗？',
-    a: '适合用来低成本试错，先确认自己的实际使用场景（能不能满足日常刷视频、用AI工具等需求），再决定要不要升级到价格更高、流量更大的套餐。'
-  }
+const faq = [
+  { q: '最便宜的机场多少钱一个月？', a: `本站收录的机场里，月付最低 ${fmtPrice(lowest.entry!.price)}/月（${lowest.name} ${lowest.entry!.name}，${fmtGB(lowest.entry!.traffic)}）。年付最低 ${fmtPrice(lowestYear.p.price)}/年（${lowestYear.b.name}，每月 ${fmtGB(lowestYear.p.traffic)}），折合约 ${fmtPrice(lowestYear.p.price / 12)}/月。` },
+  { q: '有 10 块钱以内的机场吗？', a: `按月付算，靠谱机场基本都在 ¥15 以上。所谓“¥8 一个月”通常是年付价格折算的，比如 ${lowestYear.b.name} 的 ${fmtPrice(lowestYear.p.price)}/年。如果真有月付不到 ¥10、又不写线路和倍率的机场，要特别小心。` },
+  { q: '便宜机场好用吗？会不会很卡？', a: `价格低不等于线路差。本站收录的 ${cheapPremium.length} 家 IPLC/IEPL 专线机场里，有不少月付在 ¥15–¥20，比如 ${cheapPremium.slice(0, 3).map((b) => b.name).join('、')}。真正决定晚高峰卡不卡的是线路，不是价格。` },
+  { q: '学生党推荐哪个便宜机场？', a: `学生主要用来查资料、用 ChatGPT，流量需求不大，选年付小包最划算：每月 40–60GB，一年 ¥79–¥99。比如 ${yearly.slice(0, 3).map(({ b, p }) => `${b.name} ${fmtPrice(p.price)}/年`).join('、')}。` },
+  { q: '便宜机场容易跑路吗？', a: '跑路风险和价格没有必然关系，但长期大额预付风险更高。建议便宜机场也先买月付，用稳了再考虑年付，不要一次买两三年。详见本站的机场跑路风险防范指南。' },
 ];
 
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map(f => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a }
-  }))
-};
+const schemas = [
+  itemListSchema(`${UPDATED_MONTH}便宜机场推荐`, cheapestBrands.slice(0, 10)),
+  faqSchema(faq),
+  breadcrumbSchema([{ name: '便宜机场', path: '/pianyi/' }]),
+];
 ---
+<BaseLayout
+  title={`便宜机场推荐2026：月付¥15起的${n}家机场低价排行（10月更新）`}
+  description={`2026便宜机场推荐：月付¥${lowest.entry!.price}起、年付¥${lowestYear.p.price}起，整理${n}家机场的最低价套餐，分月付¥20以内、¥30以内、年付小包和不限时流量包排行，附学生党推荐和优惠码。`}
+  structuredData={schemas}
+  ogType="article"
+>
+  <div class="k-page">
+    <div class="k-eyebrow"><a href="/">机场推荐</a> / 便宜机场 · 更新于 <time datetime="2026-10-04">{UPDATED_LABEL}</time></div>
+    <h1>便宜机场推荐 2026：月付 ¥{lowest.entry!.price} 起的低价好用机场</h1>
+    <p class="k-lead">预算有限也能用上好机场。下面按 <strong>真实月付价格</strong> 排序（不用年付折算冒充月付），分成月付 ¥20 以内、¥30 以内、年付小包和不限时流量包四张表。其中 IPLC / IEPL 专线机场单独标出，便宜和稳定可以兼得。</p>
 
-<BaseLayout title="便宜机场推荐：低预算上车指南" description="预算有限？按绝对入门价格由低到高为您整理了最便宜的节点服务商。包含真实月付与年付折算说明，避免隐藏消费。" structuredData={faqSchema}>
-  
-  <style>
-    /* 便宜机场专属：黑金终端风格 */
-    .terminal-container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-    
-    .terminal-header {
-      position: relative;
-      border-bottom: 2px dashed var(--pa-amber-border);
-      padding-bottom: 2.5rem;
-      margin-bottom: 3rem;
-    }
+    <section class="k-section">
+      <h2>便宜机场一句话推荐</h2>
+      <ul class="k-list">
+        <li><strong>月付最便宜</strong>：<a href={lowest.url}>{lowest.name}</a> {fmtPrice(lowest.entry!.price)}/月 {fmtGB(lowest.entry!.traffic)}（{lowest.lineLabel}）。</li>
+        {wuyou && <li><strong>前十名里月付最低</strong>：<a href={wuyou.url}>{wuyou.name}</a> ¥19/月 100GB，全 IPLC 专线，官网写明支持 ChatGPT 和 4K Netflix。优惠码 <code>{wuyou.promo}</code>。</li>}
+        <li><strong>一年只付一次</strong>：<a href={lowestYear.b.url}>{lowestYear.b.name}</a> {lowestYear.p.name} {fmtPrice(lowestYear.p.price)}/年，每月 {fmtGB(lowestYear.p.traffic)}。</li>
+        <li><strong>便宜又稳</strong>：<a href={sogo.url}>Sogo云</a> ¥25/月 150GB 全 IEPL 专线，三年付折合 ¥15/月。优惠码 <code>{sogo.promo}</code>。</li>
+      </ul>
+    </section>
 
-    .terminal-h1 {
-      font-size: 2.5rem;
-      font-weight: 900;
-      color: var(--pa-amber);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      letter-spacing: 2px;
-    }
-
-    .terminal-cursor {
-      display: inline-block;
-      width: 12px;
-      height: 2.5rem;
-      background-color: var(--pa-amber);
-      animation: blink 1s step-end infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-
-    .terminal-subtitle {
-      margin-top: 1.5rem;
-      font-size: 1.1rem;
-      color: var(--pa-text);
-      line-height: 1.8;
-      background: rgba(11, 10, 7, 0.6);
-      padding: 1rem;
-      border-left: 4px solid var(--pa-amber);
-    }
-
-    .info-box {
-      background-color: rgba(255, 176, 0, 0.03);
-      border: 1px solid var(--pa-amber-border);
-      border-radius: 8px;
-      padding: 2rem;
-      margin-bottom: 3rem;
-      position: relative;
-      box-shadow: inset 0 0 20px rgba(255, 176, 0, 0.02);
-    }
-    .info-box::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; width: 4px; height: 100%;
-      background-color: var(--pa-amber);
-    }
-
-    .highlight {
-      color: var(--pa-amber);
-      font-weight: bold;
-    }
-
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(1, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 3rem;
-    }
-    @media (min-width: 640px) { .grid-container { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .grid-container { grid-template-columns: repeat(3, 1fr); } }
-
-    .price-card {
-      background-color: rgba(255, 176, 0, 0.02);
-      border: 1px solid var(--pa-amber-border);
-      border-radius: 6px;
-      padding: 1.5rem;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-    .price-card:hover {
-      border-color: var(--pa-amber);
-      box-shadow: 0 4px 20px rgba(255, 176, 0, 0.15);
-      transform: translateY(-3px);
-      background-color: rgba(255, 176, 0, 0.04);
-    }
-    
-    /* TOP 1 特别样式 */
-    .top-1-card {
-      background-color: rgba(255, 176, 0, 0.08);
-      border-width: 2px;
-      border-color: var(--pa-amber);
-    }
-    .top-1-card::after {
-      content: "全网最低价";
-      position: absolute;
-      top: -12px;
-      right: 15px;
-      background: var(--pa-amber);
-      color: var(--pa-bg);
-      font-size: 0.75rem;
-      font-weight: bold;
-      padding: 2px 8px;
-      border-radius: 4px;
-      letter-spacing: 1px;
-    }
-
-    .card-title {
-      font-size: 1.25rem;
-      font-weight: 900;
-      color: var(--pa-text);
-      margin-bottom: 1rem;
-    }
-    .price-display {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--pa-amber);
-      display: flex;
-      align-items: baseline;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px dashed var(--pa-amber-border);
-      padding-bottom: 1rem;
-    }
-    .price-unit {
-      font-size: 0.9rem;
-      color: var(--pa-text-dim);
-      margin-left: 0.5rem;
-    }
-
-    .data-list {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      color: var(--pa-text);
-      flex-grow: 1;
-      margin-bottom: 1.5rem;
-    }
-    .data-item {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-    }
-    .data-label { color: var(--pa-text-dim); }
-
-    .action-btn {
-      display: block;
-      text-align: center;
-      background: transparent;
-      border: 1px solid var(--pa-amber-border);
-      color: var(--pa-amber);
-      padding: 0.6rem 1rem;
-      border-radius: 4px;
-      font-weight: bold;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    .price-card:hover .action-btn {
-      background: var(--pa-amber);
-      color: var(--pa-bg);
-      border-color: var(--pa-amber);
-    }
-
-    .faq-container {
-      border-top: 1px solid var(--pa-amber-border);
-      padding-top: 2rem;
-    }
-    .faq-title {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: var(--pa-amber);
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .faq-item {
-      background-color: rgba(0, 0, 0, 0.2);
-      border: 1px solid var(--pa-amber-border);
-      border-radius: 4px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .faq-q { font-weight: bold; color: var(--pa-amber); margin-bottom: 0.5rem; font-size: 1.1rem; }
-    .faq-a { color: var(--pa-text); font-size: 0.95rem; line-height: 1.6; }
-  </style>
-
-  <div class="terminal-container">
-    
-    <header class="terminal-header">
-      <h1 class="terminal-h1">
-        <span>[低预算检索系统]</span>
-        <span class="terminal-cursor"></span>
-      </h1>
-      <div class="terminal-subtitle">
-        <span class="highlight">> 输入指令: </span>寻找预算范围内最便宜的机场，按绝对入门价格由低到高排列。<br>
-        <span class="highlight">> 系统分析: </span>不同价格和流量可能属于不同套餐。没有月付记录时使用年付折算值，并警示高首付门槛。排序靠前不代表每 GB 单价划算。
-      </div>
-    </header>
-
-    <section class="info-box">
-      <h2 class="text-xl font-bold mb-3 flex items-center gap-2" style="color: var(--pa-amber);">
-        <span class="highlight">⚠️</span> 避坑指南：不只是看月付数字
-      </h2>
-      <div class="space-y-4" style="color: var(--pa-text); font-size: 0.95rem; line-height: 1.7;">
-        <p>本页面按<span class="highlight">绝对入门价格</span>由低到高排序，方便预算有限的用户第一眼找到最便宜的选项。但“便宜”和“划算”是两回事——入门价最低的套餐，流量额度不一定够用。以当前收录的 {sortedBrands.length} 家品牌为例，极低月付的套餐往往流量极少（例如 30GB），折算每 GB 成本反而偏高。</p>
-        <ul style="list-style-type: square; margin-left: 1.5rem; color: var(--pa-text-dim);">
-          <li>先看流量额度是否够自己日常用量，再比价格。</li>
-          <li>年付折算的月均价通常比月付更低，但需要一次性付清，如果是第一次尝试，建议谨慎选择年付。</li>
-        </ul>
+    <section class="k-section" id="under20">
+      <h2>月付 ¥20 以内的便宜机场</h2>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">机场</th><th scope="col">套餐</th><th scope="col">月付</th><th scope="col">每月流量</th><th scope="col">线路</th><th scope="col">优惠码</th><th scope="col"><span class="sr-only">操作</span></th></tr></thead>
+          <tbody>
+            {under20.map(({ b, p }) => (
+              <tr><td><BrandName b={b} /></td><td>{p.name}</td><td class="k-num">{fmtPrice(p.price)}</td><td class="k-num">{fmtGB(p.traffic)}</td><td>{b.lineLabel}</td><td><code class="k-num">{b.promo ?? '—'}</code></td><td><a href={b.register} target="_blank" rel="nofollow sponsored noopener">官网</a></td></tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <div class="grid-container">
-      {sortedBrands.map((brand, index) => (
-        <div class={`price-card ${index === 0 ? 'top-1-card' : ''}`}>
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
-            {brand.data.logo && (
-              <img src={brand.data.logo} alt={`${brand.data.name} logo`} style="height: 28px; width: auto; max-width: 90px; object-fit: contain; border-radius: 4px; background: rgba(255,176,0,0.05); padding: 3px; border: 1px solid rgba(255,176,0,0.2);" />
-            )}
-            <h3 class="card-title" style="margin-bottom: 0;">
-              <a href={`/brands/${brand.id}/`} style="color: inherit; text-decoration: none;">{brand.data.name}</a>
-            </h3>
-          </div>
-          <div class="price-display">
-            {brand.entry.price.toFixed(1)}
-            <span class="price-unit">{brand.data.currency} / 估算</span>
-          </div>
-          <div class="data-list">
-            <div class="data-item">
-              <span class="data-label">付款门槛:</span>
-              <span style={brand.entry.type.includes('年付') ? "color:#ff4b4b" : "color:#00e572"}>{brand.entry.type}</span>
-            </div>
-            <div class="data-item">
-              <span class="data-label">可用流量:</span>
-              <span>{brand.data.bandwidth_gb} GB</span>
-            </div>
-          </div>
-          <a href={`/brands/${brand.id}/`} class="action-btn">
-            进入资料页核对
-          </a>
-        </div>
-      ))}
-    </div>
-
-    <div class="faq-container">
-      <h2 class="faq-title">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        F.A.Q / 常见问题
-      </h2>
-      <div class="space-y-4">
-        {faqs.map(f => (
-          <div class="faq-item">
-            <div class="faq-q">> {f.q}</div>
-            <div class="faq-a">{f.a}</div>
-          </div>
-        ))}
+    <section class="k-section" id="under30">
+      <h2>月付 ¥20–¥30 的低价机场</h2>
+      <p>多花几块钱，流量通常能翻倍，主流专线机场的入门档都在这个区间。</p>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">机场</th><th scope="col">套餐</th><th scope="col">月付</th><th scope="col">每月流量</th><th scope="col">每 GB</th><th scope="col">线路</th><th scope="col">优惠码</th></tr></thead>
+          <tbody>
+            {under30.map(({ b, p }) => (
+              <tr class={b.slug === 'sogo' ? 'is-hl' : ''}><td><BrandName b={b} /></td><td>{p.name}</td><td class="k-num">{fmtPrice(p.price)}</td><td class="k-num">{fmtGB(p.traffic)}</td><td class="k-num">¥{perGB(p)!.toFixed(3)}</td><td>{b.lineLabel}</td><td><code class="k-num">{b.promo ?? '—'}</code></td></tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </div>
+    </section>
 
+    <section class="k-section" id="yearly">
+      <h2>年付便宜机场（适合学生党、轻度用户）</h2>
+      <p>年付套餐一次付一年，其中小包每月 40–80GB，查资料、用 ChatGPT、刷社交软件足够。</p>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">机场</th><th scope="col">套餐</th><th scope="col">年付</th><th scope="col">折合每月</th><th scope="col">每月流量</th><th scope="col">线路</th></tr></thead>
+          <tbody>
+            {yearly.map(({ b, p }) => (
+              <tr><td><BrandName b={b} /></td><td>{p.name}</td><td class="k-num">{fmtPrice(p.price)}</td><td class="k-num">{fmtPrice(monthlyEq(p)!)}</td><td class="k-num">{fmtGB(p.traffic)}</td><td>{b.lineLabel}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="k-section" id="no-expiry">
+      <h2>门槛最低的不限时流量包</h2>
+      <p>一次性购买、流量不过期，一个月只用几次的人选这个最省钱。</p>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">机场</th><th scope="col">流量包</th><th scope="col">价格</th><th scope="col">总流量</th><th scope="col">每 GB</th></tr></thead>
+          <tbody>
+            {oneTime.map(({ b, p }) => (
+              <tr><td><BrandName b={b} /></td><td>{p.name}</td><td class="k-num">{fmtPrice(p.price)}</td><td class="k-num">{fmtGB(p.traffic)}</td><td class="k-num">¥{perGB(p)!.toFixed(3)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="k-section">
+      <h2>买便宜机场的 4 个避坑提醒</h2>
+      <ol class="k-list">
+        <li><strong>看清“¥X 起”是不是年付折算</strong>：首页写“¥8 起”的，多半是年付价除以 12。</li>
+        <li><strong>看线路和倍率</strong>：不写线路、节点 2–3 倍扣流量的低价机场，实际并不便宜。见 <a href="/knowledge/traffic-multiplier/">流量倍率</a>。</li>
+        <li><strong>先月付后年付</strong>：便宜机场也先买一个月，晚高峰用稳了再长付。</li>
+        <li><strong>用优惠码</strong>：表格里的优惠码在结算页填写，能再省一点。</li>
+      </ol>
+      <p>想比较“同样的钱能买多少流量”，看 <a href="/xingjiabi/">性价比机场排行</a>；想综合比较，看 <a href="/paihangbang/">机场排行榜</a>。</p>
+    </section>
+
+    <section class="k-section">
+      <h2>便宜机场常见问题</h2>
+      {faq.map((f) => <div class="k-qa"><h3>{f.q}</h3><p>{f.a}</p></div>)}
+    </section>
   </div>
 </BaseLayout>

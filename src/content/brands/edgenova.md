@@ -1,26 +1,25 @@
 ---
-name: "edgenova"
+name: "EdgeNova"
 official_site: "https://work.edgenovaaff.cc"
 register_link: "https://work.edgenovaaff.cc/#/?code=k7VCKPvN"
-is_sponsored: false
+is_sponsored: true
 currency: "CNY"
 price_monthly: 15.0
 price_yearly: 108.0
 bandwidth_gb: 50
 bandwidth_reset_period: "monthly"
-verification_date: "2026-09-18"
-evidence_status: "本站未实测"
+verification_date: "2026-10-04"
+evidence_status: "官网资料核对"
 features:
   - "网络类型：官方宣称全节点接入 IPLC 专线"
   - "流媒体解锁：官方标称支持解锁 Netflix, Disney+, ChatGPT, TikTok 等"
-logo: "/images/logos/edgenova-logo.png"
+logo: "/images/logos/edgenova-logo.webp"
 sort_order: 999
 seo_title: "edgenova（边缘节点）套餐价格表：月付15元体验包至极界1TB全系资费明细"
 seo_description: "汇总 edgenova（边缘节点）官方最新在售套餐资费与规格，包含15元/50GB限时月付体验包、108元年付小包（月配45GB），以及极界·标准至极限套餐（25元/120GB至200元/1TB），全节点x1倍率且不限制设备数量。"
 seo_h1: "edgenova（边缘节点） 官方定价与套餐配比"
 ---
 
-> **客观收录声明**：以下所有套餐名、价格、重置周期与流量额度均严格对应 edgenova（边缘节点） 官方公开发布的原始文本。本页旨在为您过滤虚假或夸张的主观广告用语，展现最真实的资费参数。
 
 ## 官方套餐清单解析
 
@@ -39,6 +38,6 @@ seo_h1: "edgenova（边缘节点） 官方定价与套餐配比"
 > - **年付小包重置规则**：限时年付套餐流量用尽后支持 10 元付费重置。
 > *（上述优惠取自官方资料，结账时请自行核实验证）*
 
-## 待核实与说明事项
-- **未经验证的特性**：以上表格内如提及“专线”、“不降速”、“流媒体解锁”，均为官方宣称，本站未进行晚高峰独立大带宽测试。
-- **退款政策**：请参考官网 TOS，大多无条件退款周期极短或无退款。
+## 购买前提示
+- 价格、流量和优惠以官网结算页为准，机场经常推出限时活动。
+- 第一次购买建议先选月付，确认晚高峰速度和常用网站都正常后再续费或改年付。

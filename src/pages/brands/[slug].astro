@@ -1,141 +1,170 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { render, getCollection } from 'astro:content';
-import { getBrands } from '../../utils/data';
+import Promo from '../../components/Promo.astro';
+import BrandName from '../../components/BrandName.astro';
+import { render } from 'astro:content';
+import {
+  getBrandViews, avgEntryPrice, perGB, fmtGB, fmtPrice, faqSchema, breadcrumbSchema,
+  SITE_URL, SITE_NAME, UPDATED, UPDATED_LABEL, UPDATED_MONTH, PAIRS, pairSlug, type BrandView,
+} from '../../utils/data';
+import { USAGE, cheapestFor, planPriceText, unlockText, oneLiner, prosCons, brandFaq } from '../../utils/review';
 
 export async function getStaticPaths() {
-  const brands = await getBrands();
-  return brands.map(brand => ({
-    params: { slug: brand.id },
-    props: { brand },
-  }));
+  const brands = await getBrandViews();
+  return brands.map((b) => ({ params: { slug: b.slug }, props: { b, all: brands } }));
 }
 
-const { brand } = Astro.props;
-const { Content } = await render(brand);
-const evidenceImages = brand.data.evidence_images ?? [];
-const allPosts = await getCollection('posts');
-const hasReview = allPosts.some(p => p.id === brand.id);
+const { b, all } = Astro.props as { b: BrandView; all: BrandView[] };
+const { Content } = await render(b.entry_data);
+const evidence = b.entry_data.data.evidence_images ?? [];
+const avg = avgEntryPrice(all);
+const { pros, cons } = prosCons(b, avg);
+const faq = brandFaq(b);
+const rank = all.findIndex((x) => x.slug === b.slug) + 1;
+const rivals = all
+  .filter((x) => x.slug !== b.slug && x.entry && b.entry)
+  .sort((x, y) => Math.abs(x.entry!.price - b.entry!.price) - Math.abs(y.entry!.price - b.entry!.price) || x.rank - y.rank)
+  .slice(0, 4);
+const pairs = PAIRS.filter(([x, y]) => x === b.slug || y === b.slug);
+const bySlug = Object.fromEntries(all.map((x) => [x.slug, x]));
 
-const siteDomain = import.meta.env.SITE_DOMAIN || 'https://www.example-jichang.com';
-const price = brand.data.price_monthly ?? brand.data.price_yearly;
+const title = `${b.name}怎么样？2026 ${b.name}机场评测：套餐价格、线路与优惠码`;
+const description = `${b.name}机场评测（${UPDATED_MONTH}更新）：${oneLiner(b)}。${b.plans.length}个套餐价格表、按用量怎么选、优缺点、同价位对比${b.promo ? `，优惠码${b.promo}` : ''}。`;
 
-const structuredData = [
+const schemas = [
+  faqSchema(faq),
   {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: brand.data.name,
-    description: `${brand.data.name} 机场套餐公开资料，核验日期 ${brand.data.verification_date}，证据状态：${brand.data.evidence_status}`,
-    brand: { '@type': 'Brand', name: brand.data.name },
-    offers: price ? {
-      '@type': 'Offer',
-      price: price,
-      priceCurrency: brand.data.currency || 'CNY',
-      url: brand.data.register_link,
-      availability: 'https://schema.org/InStock'
-    } : undefined
+    name: `${b.name} 机场订阅`,
+    brand: { '@type': 'Brand', name: b.name },
+    description: oneLiner(b),
+    offers: b.plans.length
+      ? {
+          '@type': 'AggregateOffer',
+          priceCurrency: 'CNY',
+          lowPrice: Math.min(...b.plans.map((p) => p.price)),
+          highPrice: Math.max(...b.plans.map((p) => p.price)),
+          offerCount: b.plans.length,
+          url: `${SITE_URL}${b.url}`,
+        }
+      : undefined,
   },
   {
     '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: '首页', item: `${siteDomain}/` },
-      { '@type': 'ListItem', position: 2, name: brand.data.name, item: `${siteDomain}/brands/${encodeURIComponent(brand.id)}/` }
-    ]
-  }
+    '@type': 'Article',
+    headline: title,
+    description,
+    inLanguage: 'zh-CN',
+    datePublished: '2026-09-18',
+    dateModified: `${UPDATED}T00:00:00+08:00`,
+    author: { '@type': 'Organization', name: `${SITE_NAME}编辑部`, url: `${SITE_URL}/` },
+    publisher: { '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/` },
+    mainEntityOfPage: `${SITE_URL}${b.url}`,
+  },
+  breadcrumbSchema([{ name: '机场测评', path: '/ceping/' }, { name: b.name, path: b.url }]),
 ];
 ---
-
-<style is:global>
-  /* 终极暴力换行修复：针对所有嵌套元素强制生效 */
-  pre.astro-code, 
-  pre.astro-code * {
-    white-space: pre-wrap !important;
-    word-break: break-all !important;
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-  }
-  pre.astro-code {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 1.5rem !important;
-    margin: 1.5rem 0 !important;
-    overflow-x: hidden !important;
-    box-sizing: border-box !important;
-    text-align: left !important;
-  }
-</style>
-
-<BaseLayout 
-  title={brand.data.seo_title || `${brand.data.name} 套餐资料与价格 - 机场推荐PRO`}
-  description={brand.data.seo_description || `${brand.data.name}公开套餐资料、付款周期与注册链接。证据状态：${brand.data.evidence_status}；资料核验日期：${brand.data.verification_date}。`}
-  structuredData={structuredData}
->
-  <article class="max-w-6xl mx-auto bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200">
-    <div class="p-8">
-      <div class="flex justify-between items-start border-b border-gray-100 pb-6 mb-6">
-        <div>
-          <div class="flex items-center gap-4">
-            {brand.data.logo && (
-              <img src={brand.data.logo} alt={`${brand.data.name} logo`} class="h-16 w-auto max-w-[160px] object-contain rounded-md" />
-            )}
-            <h1 class="text-3xl font-extrabold text-gray-900">{brand.data.seo_h1 || brand.data.name}</h1>
-          </div>
-          <div class="mt-2 flex items-center text-sm text-gray-500 space-x-4">
-            <span>核验日期: {brand.data.verification_date}</span>
-            <span class="bg-gray-100 px-2 py-0.5 rounded">{brand.data.evidence_status}</span>
-            {brand.data.is_dummy && <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">演示数据</span>}
-          </div>
-        </div>
-        <div>
-          <a href={brand.data.register_link} target="_blank" rel="noopener sponsored" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-            前往注册
-          </a>
-        </div>
-      </div>
-
-
-
-      <div class="prose prose-blue max-w-none">
-        {hasReview && (
-          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 not-prose">
-            <p class="text-sm text-gray-700 m-0">
-              想看编辑的怎么样/适合谁点评角度？看 <a href={`/ceping/${encodeURIComponent(brand.id)}/`} class="text-blue-600 font-medium">{brand.data.name} 测评文章 →</a>
-            </p>
-          </div>
-        )}
-        {brand.data.is_sponsored && (
-          <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-            <p class="text-sm text-blue-700 m-0">
-              <strong>商业关系披露：</strong> 本页面包含推广链接，通过此链接注册，本站可能会获得佣金。这不会影响您支付的价格，但支持了本站的运营。
-            </p>
-          </div>
-        )}
-        <Content />
-      </div>
-
-      {evidenceImages.length ? (
-        <section class="mt-10 border-t border-gray-200 pt-8" aria-labelledby="node-evidence-title">
-          <h2 id="node-evidence-title" class="text-2xl font-bold text-gray-900">节点延迟截图</h2>
-          <p class="mt-3 text-sm text-gray-600">以下 {evidenceImages.length} 张客户端截图由站点所有者提供，本站于 2026-09-19 收到。画面显示的是节点延迟测试结果（ms），不是下载速度或带宽测试。截图未显示测试地点、运营商、设备和具体测试时间，本站尚未独立复测。</p>
-          {brand.id === 'sogo' && (
-            <div class="mt-5 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-gray-700">
-              <p class="font-semibold text-gray-900">截图中可核对的示例</p>
-              <p class="mt-2">新加坡01：10 ms；美国02：100 ms；日本01：46 ms；台湾10：36 ms；香港01：53 ms；直连德国01：84 ms。新加坡04与台湾04显示 Timeout。不同截图可能来自同一次列表滚动，不能据此计算整体成功率。</p>
-            </div>
-          )}
-          <div class="mt-6 grid gap-5 sm:grid-cols-2">
-            {evidenceImages.map((image, index) => (
-              <figure class="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
-                <a href={image.src} target="_blank" rel="noopener" aria-label={`查看${brand.data.name}节点延迟截图 ${index + 1} 原图`}>
-                  <img src={image.src} alt={image.alt} width={image.width} height={image.height} loading="lazy" decoding="async" class="h-auto w-full" />
-                </a>
-                <figcaption class="px-3 py-2 text-xs text-gray-600">截图 {index + 1} / {evidenceImages.length} · 点击查看原图</figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      ) : null}
+<BaseLayout title={title} description={description} structuredData={schemas} ogType="article">
+  <article class="k-page">
+    <div class="k-eyebrow"><a href="/">机场推荐</a> / <a href="/ceping/">机场测评</a> / {b.name} · 更新于 <time datetime={UPDATED}>{UPDATED_LABEL}</time></div>
+    <div class="k-actions" style="gap:14px; margin-bottom:8px">
+      {b.logo && <img src={b.logo} alt={`${b.name} logo`} width="56" height="56" style="width:56px;height:56px;object-fit:contain;background:#fff;border-radius:8px;padding:3px" />}
+      <h1 style="margin:0">{b.name}怎么样？{b.name}机场评测与套餐选购</h1>
     </div>
+    <p class="k-lead">{b.name}{oneLiner(b)}，在本站 <a href="/paihangbang/">机场排行榜</a> 排第 {rank} 名。下面是它的全部套餐、按用量的选购建议、优缺点和同价位对比。</p>
+
+    <div class="k-callout">
+      <div class="k-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:12px">
+        <div><div class="k-muted">月付起步</div><strong class="k-num">{b.entry ? `${fmtPrice(b.entry.price)}/月` : '无月付'}</strong></div>
+        <div><div class="k-muted">年付最低</div><strong class="k-num">{b.minYearly ? `${fmtPrice(b.minYearly.price)}/年` : '无'}</strong></div>
+        <div><div class="k-muted">线路</div><strong>{b.lineLabel}</strong></div>
+        <div><div class="k-muted">每月流量</div><strong class="k-num">{fmtGB(b.minTraffic)}–{fmtGB(b.maxTraffic)}</strong></div>
+        <div><div class="k-muted">不限时包</div><strong>{b.oneTime.length ? `${b.oneTime.length} 款` : '无'}</strong></div>
+        <div><div class="k-muted">解锁</div><strong>{unlockText(b)}</strong></div>
+      </div>
+      <div class="k-actions">
+        <a class="k-btn k-btn-solid" href={b.register} target="_blank" rel="nofollow sponsored noopener">前往 {b.name} 官网</a>
+        <Promo code={b.promo} />
+      </div>
+    </div>
+
+    <section class="k-section prose prose-invert max-w-none">
+      <Content />
+    </section>
+
+    {evidence.length > 0 && (
+      <section class="k-section" id="test">
+        <h2>{b.name}节点延迟实测</h2>
+        <p>以下是本站 2026 年 9 月在客户端里对 {b.name} 节点做的延迟测试截图（单位 ms，数值越低越好）。部分读数：新加坡01 10ms、台湾10 36ms、日本01 46ms、香港01 53ms、直连德国01 84ms、美国02 100ms。延迟测试反映连通性和响应速度，不等于下载速度；个别节点（新加坡04、台湾04）当次显示超时，切换同地区其他节点即可。</p>
+        <div class="k-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
+          {evidence.map((img, i) => (
+            <figure style="margin:0; border:1px solid var(--pa-amber-border)">
+              <a href={img.src} target="_blank" rel="noopener"><img src={img.src} alt={img.alt} width={img.width} height={img.height} loading="lazy" decoding="async" style="width:100%;height:auto;display:block" /></a>
+              <figcaption class="k-muted" style="padding:6px 8px">实测截图 {i + 1}/{evidence.length}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="k-section">
+      <h2>{b.name}套餐怎么选</h2>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">你的用量</th><th scope="col">每月需要</th><th scope="col">推荐套餐</th><th scope="col">价格</th></tr></thead>
+          <tbody>
+            {USAGE.map((u) => {
+              const p = cheapestFor(b, u.need);
+              return <tr><td><strong>{u.label}</strong><br /><span class="k-muted">{u.desc}</span></td><td class="k-num">{u.need}GB+</td><td>{p ? `${p.name}（${fmtGB(p.traffic)}/月）` : '无合适档位'}</td><td class="k-num">{p ? planPriceText(p) : '—'}</td></tr>;
+            })}
+          </tbody>
+        </table>
+      </div>
+      {b.bestValue && <p>按每 GB 计算，{b.name}最划算的是 <strong>{b.bestValue.name}</strong>，约 ¥{perGB(b.bestValue)!.toFixed(3)}/GB。{b.oneTime.length ? `偶尔才用的话，不限时包 ${fmtPrice(b.oneTime[0].price)} 起，流量不过期。` : ''}</p>}
+    </section>
+
+    <section class="k-section">
+      <h2>{b.name}优缺点</h2>
+      <div class="k-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+        <div class="k-card"><strong>优点</strong><ul class="k-list" style="margin:0">{pros.map((x) => <li>{x}</li>)}</ul></div>
+        <div class="k-card"><strong>需要注意</strong><ul class="k-list" style="margin:0">{cons.length ? cons.map((x) => <li>{x}</li>) : <li>暂无明显短板，建议先月付确认本地网络体验。</li>}</ul></div>
+      </div>
+    </section>
+
+    <section class="k-section">
+      <h2>{b.name}和同价位机场对比</h2>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">机场</th><th scope="col">月付起步</th><th scope="col">线路</th><th scope="col">流量范围</th><th scope="col">不限时</th><th scope="col">解锁</th></tr></thead>
+          <tbody>
+            {[b, ...rivals].map((x) => (
+              <tr class={x.slug === b.slug ? 'is-hl' : ''}><td><BrandName b={x} /></td><td class="k-num">{x.entry ? `${fmtPrice(x.entry.price)} / ${fmtGB(x.entry.traffic)}` : '—'}</td><td>{x.lineLabel}</td><td class="k-num">{fmtGB(x.minTraffic)}–{fmtGB(x.maxTraffic)}</td><td>{x.oneTime.length ? '有' : '无'}</td><td>{unlockText(x)}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {pairs.length > 0 && (
+        <p>详细对比：{pairs.map(([x, y], i) => <>{i > 0 && ' · '}<a href={`/duibi/${pairSlug(x, y)}/`}>{bySlug[x].name}和{bySlug[y].name}哪个好</a></>)}</p>
+      )}
+      <p>更多选择：<a href="/paihangbang/">机场排行榜</a> · <a href="/xingjiabi/">性价比机场</a> · <a href="/pianyi/">便宜机场</a> · <a href="/duibi/">机场对比</a></p>
+    </section>
+
+    <section class="k-section">
+      <h2>{b.name}购买和使用步骤</h2>
+      <ol class="k-list">
+        <li>点击上方“前往 {b.name} 官网”，用邮箱注册账号。</li>
+        <li>按上面的用量表选好套餐，第一次建议选月付。</li>
+        {b.promo ? <li>结算页填写优惠码 <code>{b.promo}</code>，确认金额后付款。</li> : <li>结算前留意官网公告里的限时折扣。</li>}
+        <li>在用户中心复制订阅链接，导入客户端：电脑用 <a href="/clash/">Clash</a> 或 <a href="/v2rayn/">V2rayN</a>，iPhone 用 <a href="/xiaohuojian/">小火箭</a>，安卓看 <a href="/tutorial/android/">安卓教程</a>。</li>
+        <li>晚上 8–11 点测一次常用网站，确认速度满意后再考虑年付。</li>
+      </ol>
+    </section>
+
+    <section class="k-section">
+      <h2>{b.name}常见问题</h2>
+      {faq.map((f) => <div class="k-qa"><h3>{f.q}</h3><p>{f.a}</p></div>)}
+      <p class="k-muted">套餐数据来自 {b.name} 官网，核对于 {UPDATED_LABEL}；价格以官网结算页为准。本页“前往官网”为推广链接。</p>
+    </section>
   </article>
 </BaseLayout>

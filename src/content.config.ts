@@ -1,5 +1,5 @@
 import { defineCollection } from 'astro:content';
-import { z } from 'astro:schema';
+import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
 const brandsCollection = defineCollection({
@@ -7,8 +7,8 @@ const brandsCollection = defineCollection({
   schema: z.object({
     sort_order: z.number().default(999),
     name: z.string(),
-    official_site: z.string().url(),
-    register_link: z.string().url(),
+    official_site: z.url(),
+    register_link: z.url(),
     logo: z.string().optional(),
     is_sponsored: z.boolean().default(false),
     currency: z.string().default('CNY'),
@@ -22,7 +22,7 @@ const brandsCollection = defineCollection({
     verification_date: z.string(),
     evidence_status: z.string(),
     evidence_images: z.array(z.object({ src: z.string(), alt: z.string(), width: z.number(), height: z.number() })).optional(),
-    is_dummy: z.boolean().default(false), // 鏍囪婕旂ず鏁版嵁锛屾寮忓彂甯冨墠闇€娓呯悊
+    is_dummy: z.boolean().default(false), // 标记演示数据，正式发布前需清理
     features: z.array(z.string()).optional(),
     seo_title: z.string().optional(),
     seo_description: z.string().optional(),
@@ -30,19 +30,9 @@ const brandsCollection = defineCollection({
   }),
 });
 
-const postsCollection = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: "./src/content/posts" }),
-  schema: z.object({
-    sort_order: z.number().default(999),
-    title: z.string(),
-    description: z.string(),
-    date: z.date(),
-    updatedDate: z.date().optional(),
-    keywords: z.array(z.string()).optional(),
-  }),
-});
+// 旧的 posts（测评文章）集合已停用：测评内容已合并进品牌评测页 /brands/{拼音}/。
+// src/content/posts/ 文件夹可以直接删除。
 
 export const collections = {
   'brands': brandsCollection,
-  'posts': postsCollection,
 };

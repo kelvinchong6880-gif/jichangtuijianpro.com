@@ -1,0 +1,7 @@
+---
+export interface Props { code: string | null; }
+const { code } = Astro.props;
+---
+{code && (
+  <span class="k-promo">优惠码 <code>{code}</code><button type="button" data-copy={code} aria-label={`复制优惠码 ${code}`}>复制</button></span>
+)}

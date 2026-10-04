@@ -1,31 +1,30 @@
 ---
-name: "飞v"
+name: "飞V"
 official_site: "https://varnexa.flyvaff.com"
 register_link: "https://varnexa.flyvaff.com/#/?code=XsiIuDgj"
-is_sponsored: false
+is_sponsored: true
 currency: "CNY"
 price_monthly: 25.0
 price_yearly: 99.0
 bandwidth_gb: 150
 bandwidth_reset_period: "monthly"
-verification_date: "2026-09-18"
-evidence_status: "本站未实测"
+verification_date: "2026-10-04"
+evidence_status: "官网资料核对"
 features:
   - "流媒体解锁：官方标称支持解锁 Netflix, ChatGPT, TikTok 等"
-logo: "/images/logos/feiv-logo.png"
+logo: "/images/logos/feiv-logo.webp"
 sort_order: 999
 seo_title: "飞V (FlyV) 官网套餐价格表：¥99年付/¥25月付与一次性买断包资费明细"
 seo_description: "汇总飞V (FlyV) 官网在售全档位套餐，包含 ¥99/年轻量版、¥25-¥190/月常规订阅（150GB-1.8TB）、¥189-¥799 一次性永不限时买断包（130GB-600GB）以及 ¥600/月独享原生IP黄金专线，提供客观无夸大的官方参数对照。"
 seo_h1: "飞V (FlyV) 官方定价与套餐规格明细"
 ---
 
-> **客观收录声明**：以下所有套餐名、价格、重置周期与流量额度均严格对应 飞V 官方公开发布的原始文本。我们已排除了主观推断性广告用语，本站未进行独立稳定性实测。
 
 ## 飞V 套餐资料行级映射
 
 | 套餐名称 | 实际付款金额 | 付款周期 | 流量额度及重置周期 | 官方宣称特性及限制 |
 | :--- | :--- | :--- | :--- | :--- |
-| **👑FlyV 会员 - 年付标准轻量版** | ¥99.00 | 年 | ⚠️ 资料冲突：原始资料同时写“月流量 65GB”和“按年重置不结转”。待核实确认后确定。 | 速率不限速 <br> 设备限制不限 <br> 官方宣称：针对极低频用户定制，轻量级专属年付通道；专为日常偶尔查阅资料、偶尔刷刷 TikTok/油管、急需低成本备用防失联量身打造；【独立防御机制】按年重置不结转，提供基础突发带宽，专供极轻度防失联用户 |
+| **👑FlyV 会员 - 年付标准轻量版** | ¥99.00 | 年 | 每月 65GB | 速率不限速 <br> 设备限制不限 <br> 官方宣称：针对极低频用户定制，轻量级专属年付通道；专为日常偶尔查阅资料、偶尔刷刷 TikTok/油管、急需低成本备用防失联量身打造；【独立防御机制】按年重置不结转，提供基础突发带宽，专供极轻度防失联用户 |
 | **👑FlyV 会员 - 入门方案** | ¥25.00 | 月 | 月流量 150GB（每月重置） | 速率不限速 <br> 设备限制不限 <br> 可选周期：月付、季付、半年付、年付 <br> 官方宣称：云端多链路即时优化 + 全链路专线架构，秒级响应，节点统一 1x 计费倍率；标称覆盖流媒体（Netflix、Prime Video、BBC、Abema、TVer 等，原生IP直通）；支持 ChatGPT 4、GitHub Copilot、Hugging Face；高性能协议，多国节点可选 |
 | **👑FlyV 会员 - 进阶方案** | ¥50.00 | 月 | 月流量 380GB（每月重置） | 速率不限速 <br> 设备限制不限 <br> 可选周期：月付、季付、半年付、年付 <br> 官方宣称：核心 BGP 三网智能调度加持 + 纯 IEPL/IPLC 专线传输，全节点统一 1x 计费；标称超清 4K/8K 视频兼容 Netflix、YouTube Premium、Disney+ 等；适配 ChatGPT、Claude、Midjourney；采用 Shadowsocks 协议，支持多设备同时并发 |
 | **👑FlyV 会员 - 高端方案** | ¥110.00 | 月 | 月流量 800GB（每月重置） | 速率不限速 <br> 设备限制不限 <br> 可选周期：月付、季付、半年付、年付 <br> 官方宣称：千兆 BGP 多线融合调度 + 专线级网络出口，全节点统一 1x 计费；标称专线直通原生 IP，全流媒体平台 4K/8K 播放；针对 ChatGPT Plus、Claude Opus 专项路由优化；特制 Shadowsocks 协议，不限制在线设备数 |

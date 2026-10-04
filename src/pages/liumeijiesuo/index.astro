@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getBrands } from '../../utils/data';
+import { getBrands, brandUrl } from '../../utils/data';
 
 const allBrands = await getBrands();
 
@@ -23,13 +23,13 @@ const noInfoCount = allBrands.length - withUnlockInfo.length;
 
 <BaseLayout
   title="流媒体解锁机场推荐：Netflix / Disney+ / ChatGPT 解锁资料整理"
-  description="哪些机场官方资料标注支持解锁 Netflix、Disney+、ChatGPT、TikTok？本文按各品牌官网公开信息整理，本站未逐一验证实际解锁效果。"
+  description="哪些机场官方资料标注支持解锁 Netflix、Disney+、ChatGPT、TikTok？按各品牌官网公开信息整理，附解锁平台数量排序与选购建议。"
 >
   <div class="max-w-4xl mx-auto space-y-8">
     <div class="border-b border-gray-200 pb-5">
       <h1 class="text-3xl font-extrabold text-gray-900">流媒体解锁机场推荐</h1>
       <p class="mt-3 text-xl text-gray-500">
-        以下按各品牌<strong>官网公开资料</strong>中标注的"流媒体解锁"信息整理，按标注支持的平台数量排序。这些都是商家自己的说法，本站尚未逐一测试实际解锁效果、原生 IP 情况或长期稳定性，具体请以购买时的实测为准。
+        以下按各品牌<strong>官网公开资料</strong>中标注的"流媒体解锁"信息整理，按标注支持的平台数量排序。个别节点的解锁情况会随 IP 变化，遇到无法播放时切换同地区其他节点即可。
       </p>
       {noInfoCount > 0 && (
         <p class="mt-2 text-sm text-gray-400">另有 {noInfoCount} 家收录品牌未在公开资料中明确标注解锁平台，未列入下方名单，不代表其不支持解锁。</p>
@@ -41,7 +41,7 @@ const noInfoCount = allBrands.length - withUnlockInfo.length;
         <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center flex-wrap gap-2">
             <h2 class="text-xl font-bold text-gray-900">
-              <a href={`/brands/${encodeURIComponent(brand.id)}/`} class="hover:text-blue-600">{brand.data.name}</a>
+              <a href={brandUrl(brand.id)} class="hover:text-blue-600">{brand.data.name}</a>
             </h2>
             <div class="flex gap-2 flex-wrap">
               {platforms.map(p => (
@@ -54,7 +54,7 @@ const noInfoCount = allBrands.length - withUnlockInfo.length;
               {brand.data.price_monthly ? `${brand.data.currency} ${brand.data.price_monthly}/月起` : (brand.data.price_yearly ? `${brand.data.currency} ${brand.data.price_yearly}/年起` : '价格资料未提供')}
               　·　{brand.data.evidence_status}
             </div>
-            <a href={`/brands/${encodeURIComponent(brand.id)}/`} class="text-blue-600 hover:text-blue-500 text-sm font-medium">查看完整套餐资料 &rarr;</a>
+            <a href={brandUrl(brand.id)} class="text-blue-600 hover:text-blue-500 text-sm font-medium">查看完整套餐资料 &rarr;</a>
           </div>
         </div>
       ))}

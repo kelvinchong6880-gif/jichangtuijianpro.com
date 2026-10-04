@@ -1,277 +1,138 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getBrands } from '../../utils/data';
+import Promo from '../../components/Promo.astro';
+import BrandName from '../../components/BrandName.astro';
+import {
+  getBrandViews, top10, perGB, fmtGB, fmtPrice, faqSchema, itemListSchema, breadcrumbSchema,
+  UPDATED_LABEL, UPDATED_MONTH, avgEntryPrice,
+} from '../../utils/data';
+import { oneLiner, prosCons, unlockText } from '../../utils/review';
 
-const allBrands = await getBrands();
+const brands = await getBrandViews();
+const n = brands.length;
+const top = top10(brands);
+const avg = avgEntryPrice(brands);
+const topSet = new Set(top.map((b) => b.slug));
+const rest = brands.filter((b) => !topSet.has(b.slug));
+const full = [...top, ...rest];
 
-// 按 sort_order 排名，其次按名称拼音
-const rankedBrands = allBrands.sort((a, b) => a.data.sort_order - b.data.sort_order || a.data.name.localeCompare(b.data.name));
+const SPECIAL: Record<string, string> = {
+  sogo: '月付全 IEPL 专线、¥25 就有 150GB，节点覆盖 10 多个地区，年付 8 折到三年付 6 折，另有 4 款不限时包，轻度到重度用户都能找到合适档位。',
+  feimao: '学生版 ¥84/年 是专线机场里门槛最低的年付之一，月付 ¥25 有 150GB，全 IPLC、单节点 2.5Gbps，节点数量和 Sogo云 接近。',
+  weifeng: '乘风 ¥27/月 有 200GB、破风 ¥57/月 500GB，同价位流量给得足；另有 270GB、570GB 两款不限时包。',
+  wuyou: '¥19/月 100GB，是前十名里月付门槛最低的一家，官网写明支持 ChatGPT、Gemini 和 4K Netflix。',
+  firefly: '套餐梯度清晰：¥25/150GB、¥45/300GB、¥85/600GB、¥150/1TB，另有 ¥96 年付和 ¥100 不限时包。',
+  kuajie: '无界 1.8TB 只要 ¥130/月，大流量单价在专线机场里最低；年付 8 折到三年付 6 折，优惠码还能叠加。',
+  shanyue: '¥24/月 150GB、晚高峰不限速，原生 IP 解锁流媒体、ChatGPT 和 TikTok，适合做 TikTok 和 AI 的用户。',
+  lingmao: '月付 Small ¥25/150GB，年付 Small ¥195（折合约 ¥16/月）性价比高，客服全天在线。',
+};
 
-const faqs = [
-  {
-    q: '机场排行榜可信吗？',
-    a: '本页排名是编辑收录顺序，不是靠测速跑分算出来的客观质量排名，这点已经在页面上方说明。可信度取决于你怎么用它——当成一个浏览起点是合理的，当成最终购买依据就不太合适。'
-  },
-  {
-    q: '排名第一的机场就是最好的吗？',
-    a: '不是。排名靠前的品牌是本站编辑主推，可能涉及推广合作关系，具体是否适合你，还要看你自己的价格预算、流量需求和线路偏好。'
-  },
-  {
-    q: '机场排行榜多久更新一次？',
-    a: '本站会不定期核对各品牌资料，具体每个品牌的核验日期显示在对应的品牌资料页上，请以那里标注的日期为准。'
-  },
-  {
-    q: '除了排行榜还应该看什么？',
-    a: '建议再看一下 性价比机场 页学习怎么自己算每GB成本，或者去 机场对比 页把几个候选放在一张表里逐项核对，不要只看排行榜的名次顺序。'
-  }
+const sub = [
+  { title: '专线机场排行', desc: '只看 IPLC / IEPL 专线，按月付起步价排序', list: brands.filter((b) => b.premium && b.entry).sort((a, c) => a.entry!.price - c.entry!.price).slice(0, 5), val: (b: any) => `${fmtPrice(b.entry.price)}/月 · ${b.lineLabel}` },
+  { title: '便宜机场排行', desc: '按月付起步价从低到高', list: brands.filter((b) => b.entry).sort((a, c) => a.entry!.price - c.entry!.price || (c.entry!.traffic ?? 0) - (a.entry!.traffic ?? 0)).slice(0, 5), val: (b: any) => `${fmtPrice(b.entry.price)}/月 ${fmtGB(b.entry.traffic)}` },
+  { title: '大流量机场排行', desc: '按单个套餐最高月流量排序', list: brands.filter((b) => b.monthly.length).sort((a, c) => c.maxTraffic - a.maxTraffic).slice(0, 5), val: (b: any) => `最高 ${fmtGB(b.maxTraffic)}/月` },
+  { title: '性价比机场排行', desc: '按最划算周期套餐的每 GB 价格', list: brands.filter((b) => b.bestValue).sort((a, c) => perGB(a.bestValue!)! - perGB(c.bestValue!)!).slice(0, 5), val: (b: any) => `¥${perGB(b.bestValue)!.toFixed(3)}/GB` },
+  { title: '不限时机场排行', desc: '按最便宜的不限时流量包', list: brands.filter((b) => b.oneTime.length).sort((a, c) => a.oneTime[0].price - c.oneTime[0].price).slice(0, 5), val: (b: any) => `${fmtPrice(b.oneTime[0].price)} / ${fmtGB(b.oneTime[0].traffic)}` },
 ];
 
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map(f => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a }
-  }))
-};
+const faq = [
+  { q: '2026 年机场排行榜第一名是哪家？', a: `${UPDATED_MONTH}排行榜第一名是 Sogo云：月付 ¥25 起 150GB，月付全 IEPL 专线，有年付 8 折到三年付 6 折的长期折扣和 4 款不限时流量包。Sogo云 也是本站合作品牌。` },
+  { q: '机场排行榜是怎么排的？', a: '按 5 个方面综合排序：线路（IPLC/IEPL 专线优先）、月付起步价、每 GB 成本、年付和不限时等套餐灵活度、流媒体与 AI 解锁。数据全部来自各机场官网，每月核对一次。' },
+  { q: '排名靠后的机场就不好吗？', a: '不一定。排名综合了多个维度，某家机场可能在单项上很突出，比如大流量单价最低或不限时包最便宜。可以直接看下方的分类排行，按你最在意的那一项选。' },
+  { q: '十大机场推荐有哪些？', a: `本月前十：${top.map((b) => b.name).join('、')}。` },
+  { q: '排行榜多久更新一次？', a: `每月按官网核对一次价格、流量和优惠码，本页最近更新于 ${UPDATED_LABEL}。` },
+];
+
+const schemas = [
+  itemListSchema(`${UPDATED_MONTH}机场排行榜`, full),
+  faqSchema(faq),
+  breadcrumbSchema([{ name: '机场排行榜', path: '/paihangbang/' }]),
+];
 ---
+<BaseLayout
+  title={`机场排行榜2026：${n}家机场排名与十大机场推荐（10月更新）`}
+  description={`2026机场排行榜（${UPDATED_MONTH}更新）：${n}家机场按专线质量、月付价格、每GB成本综合排名，附十大机场推荐理由，以及专线、便宜、大流量、性价比、不限时分类排行和优惠码。`}
+  structuredData={schemas}
+  ogType="article"
+>
+  <div class="k-page">
+    <div class="k-eyebrow"><a href="/">机场推荐</a> / 机场排行榜 · 更新于 <time datetime="2026-10-04">{UPDATED_LABEL}</time></div>
+    <h1>2026 机场排行榜：{n} 家机场排名与十大机场推荐</h1>
+    <p class="k-lead">我们按 <strong>线路质量、月付价格、每 GB 成本、套餐灵活度、流媒体和 AI 解锁</strong> 五个方面，给 {n} 家机场排了名。前十名逐一写了推荐理由和注意事项；后面还有专线、便宜、大流量、性价比、不限时五个分类排行，按你最在意的一项直接选。</p>
 
-<BaseLayout title="机场排行榜：编辑推荐顺序与品牌资料" description="本站收录品牌的编辑推荐顺序，非独立实测质量排名。查看价格、付款周期与资料核验情况。" structuredData={faqSchema}>
-  
-  <style>
-    .terminal-container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-    .terminal-header {
-      position: relative;
-      border-bottom: 2px dashed var(--pa-amber-border);
-      padding-bottom: 2.5rem;
-      margin-bottom: 3rem;
-    }
-    .terminal-h1 {
-      font-size: 2.5rem;
-      font-weight: 900;
-      color: var(--pa-amber);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      letter-spacing: 2px;
-    }
-    .terminal-cursor {
-      display: inline-block;
-      width: 12px;
-      height: 2.5rem;
-      background-color: var(--pa-amber);
-      animation: blink 1s step-end infinite;
-    }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    
-    .terminal-subtitle {
-      margin-top: 1.5rem;
-      font-size: 1.1rem;
-      color: var(--pa-text);
-      line-height: 1.8;
-      background: rgba(11, 10, 7, 0.6);
-      padding: 1rem;
-      border-left: 4px solid var(--pa-amber);
-    }
-    .highlight { color: var(--pa-amber); font-weight: bold; }
+    <section class="k-section">
+      <h2>十大机场推荐（{UPDATED_MONTH}）</h2>
+      {top.map((b, i) => {
+        const pc = prosCons(b, avg);
+        return (
+          <article class="k-card" style="margin-bottom:16px; gap:10px">
+            <div class="k-actions" style="justify-content:space-between">
+              <div class="k-actions"><span class="k-rank">#{i + 1}</span><BrandName b={b} />{i === 0 && <span class="k-pill">本站合作品牌</span>}</div>
+              <div class="k-actions"><Promo code={b.promo} /><a class="k-btn k-btn-solid" href={b.register} target="_blank" rel="nofollow sponsored noopener">前往官网</a></div>
+            </div>
+            <p style="margin:0"><strong>推荐理由：</strong>{SPECIAL[b.slug] ?? `${oneLiner(b)}。`}</p>
+            <p style="margin:0" class="k-muted">关键参数：{oneLiner(b)} · 解锁：{unlockText(b)}</p>
+            {pc.cons.length > 0 && <p style="margin:0" class="k-muted">需要注意：{pc.cons.slice(0, 2).join('；')}。</p>}
+            <a href={b.url}>{b.name}详细评测与全部套餐 →</a>
+          </article>
+        );
+      })}
+    </section>
 
-    /* 黑金终端数据表 */
-    .terminal-table-container {
-      background: rgba(255, 176, 0, 0.02);
-      border: 1px solid var(--pa-amber-border);
-      border-radius: 8px;
-      overflow-x: auto;
-      box-shadow: inset 0 0 20px rgba(255, 176, 0, 0.02);
-      margin-bottom: 4rem;
-    }
-    .terminal-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-    .terminal-table th {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--pa-text-dim);
-      border-bottom: 1px solid var(--pa-amber);
-      padding: 1rem 0.75rem;
-      background: rgba(255, 176, 0, 0.05);
-    }
-    .terminal-table td {
-      padding: 1rem 0.75rem;
-      border-bottom: 1px dashed var(--pa-amber-border);
-      color: var(--pa-text);
-      vertical-align: middle;
-      transition: background 0.2s;
-    }
-    .terminal-table th:first-child, .terminal-table td:first-child { padding-left: 1.5rem; }
-    .terminal-table th:last-child, .terminal-table td:last-child { padding-right: 1.5rem; text-align: right; }
-    
-    .terminal-table tr:last-child td { border-bottom: none; }
-    .terminal-table tr:hover td { background: rgba(255, 176, 0, 0.06); }
-    
-    /* 排行榜名次专属 */
-    .rank-cell {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.75rem;
-      font-weight: 900;
-      width: 4rem;
-    }
-    .rank-1 { color: #ffb000; text-shadow: 0 0 10px rgba(255,176,0,0.5); }
-    .rank-2 { color: #c0c0c0; }
-    .rank-3 { color: #b87333; }
-    .rank-other { color: rgba(255, 176, 0, 0.4); font-size: 1.5rem; }
-
-    .brand-logo {
-      height: 28px;
-      width: auto;
-      max-width: 80px;
-      object-fit: contain;
-      border-radius: 4px;
-      background: rgba(255,176,0,0.05);
-      padding: 2px;
-      border: 1px solid rgba(255,176,0,0.2);
-    }
-
-    .data-number {
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--pa-amber);
-      font-weight: 900;
-      font-size: 1rem;
-    }
-    .data-sub {
-      font-size: 0.75rem;
-      color: var(--pa-text-dim);
-      margin-top: 0.25rem;
-    }
-
-    .sponsor-badge {
-      font-size: 0.65rem;
-      background: var(--pa-amber);
-      color: var(--pa-bg);
-      padding: 2px 6px;
-      border-radius: 3px;
-    }
-    
-    .action-btn-exec {
-      display: inline-block;
-      padding: 0.4rem 0.8rem;
-      border: 1px solid var(--pa-amber);
-      background: transparent;
-      color: var(--pa-amber);
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-weight: 900;
-      text-decoration: none;
-      transition: all 0.2s;
-      font-family: 'JetBrains Mono', monospace;
-      white-space: nowrap;
-    }
-    .action-btn-exec:hover {
-      background: var(--pa-amber);
-      color: var(--pa-bg);
-      box-shadow: 0 0 10px rgba(255,176,0,0.4);
-    }
-    
-    .faq-container { border-top: 1px dashed var(--pa-amber-border); padding-top: 2rem; }
-    .faq-title { font-size: 1.5rem; font-weight: bold; color: var(--pa-amber); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
-    .faq-item { background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--pa-amber-border); border-radius: 4px; padding: 1.5rem; margin-bottom: 1rem; }
-    .faq-q { font-weight: bold; color: var(--pa-amber); margin-bottom: 0.5rem; font-size: 1.1rem; }
-    .faq-a { color: var(--pa-text); font-size: 0.95rem; line-height: 1.6; }
-  </style>
-
-  <div class="terminal-container">
-    <header class="terminal-header">
-      <h1 class="terminal-h1">
-        <span>[排行榜系统]</span>
-        <span class="terminal-cursor"></span>
-      </h1>
-      <div class="terminal-subtitle">
-        <span class="highlight">> 输入指令: </span>拉取品牌序列，生成编辑推荐排位视图。<br>
-        <span class="highlight">> 系统警告: </span>本质上为本站<span class="highlight">编辑收录顺序</span>，不是客观速度打分。前几名为精选主推，其余按拼音列出。<br>
-        <span class="highlight">> 推荐操作: </span>如需按维度硬核比对，请调用 <a href="/duibi/" style="color:var(--pa-amber);text-decoration:underline;">[数据对比模块] (机场对比)</a> 模块。
-      </div>
-    </header>
-
-    <section style="background-color: rgba(255, 176, 0, 0.03); border: 1px solid var(--pa-amber-border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
-      <h2 style="color: var(--pa-amber); font-size: 1.2rem; font-weight: bold; margin-top: 0;">机场排行榜是怎么排的，怎么看比较合适</h2>
-      <div style="color: var(--pa-text); font-size: 0.95rem; line-height: 1.7; display: flex; flex-direction: column; gap: 0.75rem;">
-        <p>这份排行榜的名次本质上是本站的<span class="highlight">编辑收录顺序</span>，不是靠测速跑分或用户打分算出来的客观质量排名。机场这类服务的真实体验（晚高峰速率、解锁效果、长期稳定性）很难在没有持续实测的情况下客观量化，如果强行编一个"综合评分"排出第一到第 {rankedBrands.length} 名，反而是在用一个看起来权威、实际没有依据的数字误导你。</p>
-        <p>如果你的决策标准是价格，去 <a href="/pianyi/" style="color: var(--pa-amber);">便宜机场</a> 按入门价格由低到高看；如果想自己核算每 GB 成本，去 <a href="/xingjiabi/" style="color: var(--pa-amber);">性价比机场</a> 看计算方法；如果想把几家放在一张表里逐项核对，去 <a href="/duibi/" style="color: var(--pa-amber);">机场对比</a>。这份排行榜更适合"不知道从哪家看起"时作为浏览起点，而不是最终的选购依据。</p>
+    <section class="k-section">
+      <h2>{n} 家机场完整排名</h2>
+      <div class="k-table-wrap">
+        <table class="k-table">
+          <thead><tr><th scope="col">排名</th><th scope="col">机场</th><th scope="col">月付起步</th><th scope="col">年付最低</th><th scope="col">流量范围</th><th scope="col">线路</th><th scope="col">不限时</th><th scope="col">优惠码</th></tr></thead>
+          <tbody>
+            {full.map((b, i) => (
+              <tr class={i === 0 ? 'is-hl' : ''}>
+                <td class="k-rank">#{i + 1}</td>
+                <td><BrandName b={b} /></td>
+                <td class="k-num">{b.entry ? `${fmtPrice(b.entry.price)} / ${fmtGB(b.entry.traffic)}` : '—'}</td>
+                <td class="k-num">{b.minYearly ? `${fmtPrice(b.minYearly.price)} / ${fmtGB(b.minYearly.traffic)}每月` : '—'}</td>
+                <td class="k-num">{fmtGB(b.minTraffic)}–{fmtGB(b.maxTraffic)}</td>
+                <td>{b.lineLabel}</td>
+                <td>{b.oneTime.length ? '有' : '无'}</td>
+                <td><code class="k-num">{b.promo ?? '—'}</code></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <div class="terminal-table-container">
-      <table class="terminal-table">
-        <thead>
-          <tr>
-            <th style="width: 5rem;">排名</th>
-            <th>品牌</th>
-            <th>门槛价格</th>
-            <th>可用流量</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rankedBrands.map((brand, index) => (
-            <tr>
-              <td>
-                <div class={`rank-cell ${index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-other'}`}>
-                  #{index + 1}
-                </div>
-              </td>
-              <td>
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                  {brand.data.logo && (
-                    <img src={brand.data.logo} alt={`${brand.data.name} logo`} class="brand-logo" />
-                  )}
-                  <div>
-                    <div style="font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                      <a href={`/brands/${brand.id}/`} style="color: inherit; text-decoration: none;">{brand.data.name}</a>
-                      {brand.data.is_sponsored && <span class="sponsor-badge">主推</span>}
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <div class="data-number">
-                  {brand.id === 'sogo' ? '¥25/月起' : `${brand.data.currency} ${brand.data.price_monthly || '-'} / ${brand.data.price_yearly || '-'}`}
-                </div>
-                <div class="data-sub">{brand.id === 'sogo' ? '长周期套餐均有折算优惠' : '月付下限 / 年付参考'}</div>
-              </td>
-              <td>
-                <div class="data-number">{brand.id === 'sogo' ? '≈150 GB' : `${brand.data.bandwidth_gb} GB`}</div>
-              </td>
-              <td>
-                <a href={brand.data.register_link} target="_blank" rel="noopener sponsored" class="action-btn-exec">
-                  > 直达官网
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="faq-container">
-      <h2 class="faq-title">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        规则与常见问题
-      </h2>
-      <div class="space-y-4">
-        {faqs.map(f => (
-          <div class="faq-item">
-            <div class="faq-q">> {f.q}</div>
-            <div class="faq-a">{f.a}</div>
+    <section class="k-section">
+      <h2>分类排行榜</h2>
+      <div class="k-grid">
+        {sub.map((s) => (
+          <div class="k-card">
+            <strong>{s.title}</strong>
+            <span class="k-muted">{s.desc}</span>
+            <ol class="k-list" style="margin:6px 0 0">
+              {s.list.map((b) => <li><a href={b.url}>{b.name}</a> <span class="k-muted">{s.val(b)}</span></li>)}
+            </ol>
           </div>
         ))}
       </div>
-    </div>
+      <p style="margin-top:16px">想看更细的计算：<a href="/xingjiabi/">性价比机场</a>（每 GB 价格）· <a href="/pianyi/">便宜机场</a>（月付和年付最低价）· <a href="/duibi/">机场对比</a>（参数横向对比）。</p>
+    </section>
+
+    <section class="k-section">
+      <h2>排名方法</h2>
+      <ul class="k-list">
+        <li><strong>线路</strong>：IPLC / IEPL 专线优先，晚高峰更稳定。</li>
+        <li><strong>价格</strong>：以真实月付价格为准，不用“年付折合”冒充月付价。</li>
+        <li><strong>每 GB 成本</strong>：用每月价格除以每月流量，比较同样的钱能买多少流量。</li>
+        <li><strong>套餐灵活度</strong>：有没有年付小包、长期折扣和不限时流量包。</li>
+        <li><strong>解锁</strong>：官网是否写明支持 Netflix、ChatGPT 等。</li>
+      </ul>
+      <p>所有数据来自各机场官网，最后核对于 {UPDATED_LABEL}。Sogo云 是本站合作品牌；网络体验会受本地运营商影响，第一次购买建议先选月付。</p>
+    </section>
+
+    <section class="k-section">
+      <h2>机场排行榜常见问题</h2>
+      {faq.map((f) => <div class="k-qa"><h3>{f.q}</h3><p>{f.a}</p></div>)}
+    </section>
   </div>
 </BaseLayout>

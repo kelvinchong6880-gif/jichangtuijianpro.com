@@ -1,30 +1,43 @@
 ---
 import '../styles/global.css';
+import { getBrandViews, SITE_NAME, SITE_URL, UPDATED, UPDATED_LABEL } from '../utils/data';
 
 export interface Props {
   title: string;
   description: string;
   structuredData?: Record<string, any> | Record<string, any>[];
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
 }
 
-const { title, description, structuredData } = Astro.props;
-const schemas = structuredData
-  ? (Array.isArray(structuredData) ? structuredData : [structuredData])
-  : [];
+const { title, description, structuredData, ogType = 'website', noindex = false } = Astro.props;
+const pageSchemas = structuredData ? (Array.isArray(structuredData) ? structuredData : [structuredData]) : [];
 
 const navItems = [
   { name: '机场推荐', path: '/' },
+  { name: '机场排行榜', path: '/paihangbang/' },
   { name: '性价比机场', path: '/xingjiabi/' },
   { name: '便宜机场', path: '/pianyi/' },
-  { name: '优质机场', path: '/youzhi/' },
   { name: '机场对比', path: '/duibi/' },
-  { name: '机场排行榜', path: '/paihangbang/' },
+  { name: '机场测评', path: '/ceping/' },
+  { name: '使用教程', path: '/tutorial/' },
 ];
 
 const currentPath = Astro.url.pathname;
 const siteDomain = import.meta.env.SITE_DOMAIN || 'https://www.example-jichang.com';
 const canonicalURL = new URL(Astro.url.pathname, siteDomain);
-const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === 'true' || siteDomain.includes('example-jichang.com') || (process.env.CF_PAGES === '1' && process.env.CF_PAGES_BRANCH !== 'main');
+const isPreviewOrDummy =
+  import.meta.env.DEV ||
+  import.meta.env.IS_PREVIEW === 'true' ||
+  siteDomain.includes('example-jichang.com') ||
+  (process.env.CF_PAGES === '1' && process.env.CF_PAGES_BRANCH !== 'main');
+
+const baseSchemas = [
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, alternateName: '机场推荐', url: `${SITE_URL}/`, inLanguage: 'zh-CN' },
+  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/`, logo: `${SITE_URL}/favicon.svg` },
+];
+const brands = await getBrandViews();
+const footerBrands = brands.slice(0, 12);
 ---
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -34,24 +47,42 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
-    {isPreviewOrDummy && <meta name="robots" content="noindex, nofollow" />}
+    {isPreviewOrDummy || noindex
+      ? <meta name="robots" content="noindex, nofollow" />
+      : <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    {schemas.map((schema) => (
+    <meta name="theme-color" content="#0b0a07" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:updated_time" content={`${UPDATED}T00:00:00+08:00`} />
+    <meta name="twitter:card" content="summary" />
+    {[...baseSchemas, ...pageSchemas].map((schema) => (
       <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     ))}
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+SC:wght@400;900&display=swap" rel="stylesheet">
-    
+
     <style is:global>
+        /* 不再加载 Google Fonts（中国大陆经常无法访问，会拖慢首屏）。
+           旧页面里引用的字体名映射到本机字体，零网络请求。 */
+        @font-face { font-family: 'JetBrains Mono'; src: local('Cascadia Mono'), local('Consolas'), local('Menlo'), local('SFMono-Regular'); }
+        @font-face { font-family: 'Noto Sans SC'; src: local('PingFang SC'), local('Microsoft YaHei'), local('Noto Sans CJK SC'), local('Source Han Sans SC'); }
+        :root {
+            --font-sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+            --font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'SFMono-Regular', monospace;
+        }
+
         :root {
             --pa-bg: #0b0a07;
             --pa-amber: #ffb000;
             --pa-amber-weak: rgba(255, 176, 0, 0.15);
             --pa-amber-border: rgba(255, 176, 0, 0.35);
             --pa-text: #f0e2c0;
-            --pa-text-dim: #9e937b;
+            --pa-text-dim: #b3a88f;
             --pa-offline: #6b5a2a;
         }
 
@@ -60,8 +91,8 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
             padding: 0;
             background-color: var(--pa-bg) !important;
             color: var(--pa-text) !important;
-            font-family: 'JetBrains Mono', monospace;
-            line-height: 1.6;
+            font-family: var(--font-sans);
+            line-height: 1.75;
             min-height: 100vh;
         }
 
@@ -127,14 +158,6 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
         th, td { border-color: var(--pa-amber-border) !important; color: var(--pa-text) !important; }
         th { color: var(--pa-amber) !important; }
 
-        /* 扫描线覆盖层 */
-        .pa-scanlines {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: repeating-linear-gradient(0deg, rgba(255,176,0,.035) 0, rgba(255,176,0,.035) 1px, transparent 1px, transparent 3px);
-            pointer-events: none;
-            z-index: 9999;
-        }
 
         .pa-container {
             max-width: 1200px;
@@ -251,61 +274,123 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
         .prose tbody tr:hover td {
             background-color: rgba(255, 176, 0, 0.08) !important;
         }
-    </style>
+    
 
+        /* ---------- 新版通用组件 ---------- */
+        .skip-link { position: absolute; left: 16px; top: -60px; z-index: 1000; background: var(--pa-amber); color: var(--pa-bg); padding: 10px 16px; font-weight: 700; }
+        .skip-link:focus { top: 12px; }
+        :focus-visible { outline: 2px solid var(--pa-amber); outline-offset: 2px; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+        .k-page h1 { font-family: var(--font-sans); font-weight: 900; font-size: clamp(1.75rem, 4vw, 2.6rem); line-height: 1.25; color: var(--pa-amber); margin: 0 0 16px; text-wrap: balance; }
+        .k-page h2 { font-size: clamp(1.3rem, 2.6vw, 1.7rem); color: var(--pa-amber); margin: 0 0 14px; line-height: 1.35; text-wrap: balance; }
+        .k-page h3 { font-size: 1.12rem; color: var(--pa-text); margin: 20px 0 8px; }
+        .k-page p, .k-page li { color: var(--pa-text); }
+        .k-page a { color: var(--pa-amber); }
+        .k-eyebrow { font-family: var(--font-mono); font-size: 13px; color: var(--pa-text-dim); letter-spacing: .04em; margin-bottom: 10px; }
+        .k-lead { font-size: 1.05rem; max-width: 52em; color: var(--pa-text); }
+        .k-section { margin: 56px 0; }
+        .k-muted { color: var(--pa-text-dim) !important; font-size: 14px; }
+        .k-table-wrap { position: relative; overflow-x: auto; border: 1px solid var(--pa-amber-border); margin: 16px 0; }
+        .k-table { width: 100%; border-collapse: collapse; min-width: 640px; font-size: 14px; }
+        .k-table th, .k-table td { padding: 11px 12px; border-bottom: 1px solid var(--pa-amber-border); text-align: left; vertical-align: top; }
+        .k-table th { background: var(--pa-amber-weak); color: var(--pa-amber); font-weight: 700; white-space: nowrap; }
+        .k-table td { color: var(--pa-text); }
+        .k-table tr.is-hl td { background: rgba(255,176,0,.07); }
+        .k-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .k-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        .k-card { border: 1px solid var(--pa-amber-border); padding: 18px; display: flex; flex-direction: column; gap: 8px; background: rgba(255,176,0,.02); }
+        .k-card:hover { border-color: var(--pa-amber); }
+        .k-card .k-tag { font-family: var(--font-mono); font-size: 12px; color: var(--pa-amber); }
+        .k-card strong { font-size: 1.1rem; color: var(--pa-text); }
+        .k-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; border: 1px solid var(--pa-amber); color: var(--pa-amber) !important; text-decoration: none !important; font-weight: 700; font-size: 14px; white-space: nowrap; }
+        .k-btn-solid { background: var(--pa-amber); color: var(--pa-bg) !important; }
+        .k-btn:hover { box-shadow: 0 0 0 2px var(--pa-amber-weak); }
+        .k-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .k-promo { display: inline-flex; align-items: center; gap: 8px; border: 1px dashed var(--pa-amber-border); padding: 4px 4px 4px 10px; font-size: 13px; }
+        .k-promo code { font-family: var(--font-mono); color: var(--pa-amber); background: none; }
+        .k-promo button { border: 0; background: var(--pa-amber); color: var(--pa-bg); font-weight: 700; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+        .k-faq details { border-bottom: 1px solid var(--pa-amber-border); padding: 14px 0; }
+        .k-faq summary { cursor: pointer; font-weight: 700; color: var(--pa-text); list-style: none; }
+        .k-faq summary::-webkit-details-marker { display: none; }
+        .k-faq summary::before { content: '+ '; color: var(--pa-amber); font-family: var(--font-mono); }
+        .k-faq details[open] summary::before { content: '− '; }
+        .k-faq details p { margin: 10px 0 0; }
+        .k-qa { border-bottom: 1px solid var(--pa-amber-border); padding: 6px 0 14px; }
+        .k-qa h3 { margin-top: 12px; }
+        .k-list { padding-left: 1.3em; }
+        .k-list li { margin-bottom: 8px; }
+        .k-callout { border-left: 3px solid var(--pa-amber); padding: 14px 18px; background: rgba(255,176,0,.05); margin: 16px 0; }
+        .k-pill { display: inline-block; border: 1px solid var(--pa-amber-border); padding: 1px 8px; font-size: 12px; margin: 2px 4px 2px 0; color: var(--pa-text); }
+        .k-rank { font-family: var(--font-mono); color: var(--pa-amber); font-weight: 700; }
+        .k-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--pa-text) !important; font-weight: 700; text-decoration: none !important; }
+        .k-brand img { width: 26px; height: 26px; object-fit: contain; background: #fff; border-radius: 4px; padding: 1px; }
+        .pa-nav-links a { padding: 4px 0; }
+        /* 知识 / 教程 / VPN 等白底文章页：修复标题看不清、排版缺失 */
+        .container h1 { color: var(--pa-amber) !important; font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 900; line-height: 1.3; margin: .5rem 0 0; }
+        .container .article-content h2 { font-size: 1.4rem; font-weight: 800; line-height: 1.4; margin: 2rem 0 .75rem; }
+        .container .article-content h3 { font-size: 1.15rem; font-weight: 700; margin: 1.5rem 0 .5rem; }
+        .container .article-content p { margin: 0 0 1rem; line-height: 1.8; }
+        .container .article-content ul { list-style: disc; padding-left: 1.4em; margin: 0 0 1rem; }
+        .container .article-content ol { list-style: decimal; padding-left: 1.4em; margin: 0 0 1rem; }
+        .container .article-content li { margin-bottom: .4rem; line-height: 1.75; }
+        .container .article-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; display: block; overflow-x: auto; }
+        .container .article-content th, .container .article-content td { border: 1px solid #e2e8f0 !important; padding: 8px 10px; color: #0f172a !important; }
+        .container .article-content th { background: #f1f5f9; }
+        @media (max-width: 720px) {
+            .pa-nav { margin-bottom: 28px; }
+            .pa-nav-links { gap: 10px 16px; }
+            .k-section { margin: 40px 0; }
+        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    </style>
   </head>
   <body>
-    <div class="pa-scanlines"></div>
+    <a class="skip-link" href="#main">跳到正文</a>
     <div class="pa-container">
-        
-        <!-- 全局 CRT 导航 -->
-        <nav class="pa-nav">
-            <a href="/" class="pa-nav-left">
-                <img src="/images/site-logo.jpg" alt="Logo" style="height: 24px; filter: invert(70%) sepia(100%) saturate(300%) hue-rotate(350deg) brightness(100%) contrast(100%); mix-blend-mode: screen;" />
+        <header class="pa-nav">
+            <a href="/" class="pa-nav-left" aria-label={`${SITE_NAME} 首页`}>
+                <img src="/images/site-logo.jpg" alt="" width="24" height="24" style="height: 24px; width: auto; filter: invert(70%) sepia(100%) saturate(300%) hue-rotate(350deg) brightness(100%) contrast(100%); mix-blend-mode: screen;" />
                 <span class="pa-title-cn">机场推荐PRO</span>
             </a>
-            <div class="pa-nav-links">
+            <nav class="pa-nav-links" aria-label="主导航">
                 {navItems.map(item => (
                     <a href={item.path} class={currentPath === item.path || (item.path !== '/' && currentPath.startsWith(item.path)) ? 'active' : ''}>{item.name}</a>
                 ))}
-            </div>
-            <div class="pa-nav-right" id="paClock">00:00:00</div>
-        </nav>
-
-        <main class="flex-grow">
-            <!-- 子页面内容插槽 -->
+            </nav>
+        </header>
+        <main id="main">
             <slot />
         </main>
-
-        <!-- 全局 CRT 页脚 -->
         <footer class="pa-footer" style="flex-direction: column; align-items: stretch; gap: 24px;">
-            <div style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between;">
+            <div style="display: flex; flex-wrap: wrap; gap: 32px; justify-content: space-between;">
                 <div>
-                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">选购指南</div>
+                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">机场推荐</div>
                     <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <a href="/xingjiabi/" style="color: var(--pa-text-dim);">性价比机场</a>
-                        <a href="/pianyi/" style="color: var(--pa-text-dim);">便宜机场</a>
-                        <a href="/youzhi/" style="color: var(--pa-text-dim);">优质机场</a>
-                        <a href="/duibi/" style="color: var(--pa-text-dim);">机场对比</a>
+                        <a href="/" style="color: var(--pa-text-dim);">2026 机场推荐</a>
                         <a href="/paihangbang/" style="color: var(--pa-text-dim);">机场排行榜</a>
+                        <a href="/xingjiabi/" style="color: var(--pa-text-dim);">性价比机场推荐</a>
+                        <a href="/pianyi/" style="color: var(--pa-text-dim);">便宜机场推荐</a>
+                        <a href="/duibi/" style="color: var(--pa-text-dim);">机场对比</a>
+                        <a href="/youzhi/" style="color: var(--pa-text-dim);">优质机场</a>
                         <a href="/liumeijiesuo/" style="color: var(--pa-text-dim);">流媒体解锁机场</a>
                     </div>
                 </div>
                 <div>
-                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">知识与教程</div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <a href="/knowledge/" style="color: var(--pa-text-dim);">机场知识库</a>
-                        <a href="/vpn/" style="color: var(--pa-text-dim);">VPN基础与排障</a>
-                        <a href="/tutorial/" style="color: var(--pa-text-dim);">使用教程</a>
-                        <a href="/ceping/" style="color: var(--pa-text-dim);">测评文章</a>
+                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">热门机场评测</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, auto); gap: 6px 18px;">
+                        {footerBrands.map((b) => <a href={b.url} style="color: var(--pa-text-dim);">{b.name}</a>)}
                     </div>
+                    <a href="/ceping/" style="color: var(--pa-amber); display: inline-block; margin-top: 8px;">全部 {brands.length} 家机场 →</a>
                 </div>
                 <div>
-                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">客户端指南</div>
+                    <div style="color: var(--pa-amber); font-weight: bold; margin-bottom: 8px;">教程与知识</div>
                     <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <a href="/clash/" style="color: var(--pa-text-dim);">Clash</a>
-                        <a href="/xiaohuojian/" style="color: var(--pa-text-dim);">小火箭 (Shadowrocket)</a>
-                        <a href="/v2rayn/" style="color: var(--pa-text-dim);">V2rayN</a>
+                        <a href="/tutorial/" style="color: var(--pa-text-dim);">使用教程</a>
+                        <a href="/clash/" style="color: var(--pa-text-dim);">Clash 教程</a>
+                        <a href="/xiaohuojian/" style="color: var(--pa-text-dim);">小火箭教程</a>
+                        <a href="/v2rayn/" style="color: var(--pa-text-dim);">V2rayN 教程</a>
+                        <a href="/knowledge/" style="color: var(--pa-text-dim);">机场知识库</a>
+                        <a href="/vpn/" style="color: var(--pa-text-dim);">VPN 基础与排障</a>
                     </div>
                 </div>
                 <div>
@@ -315,23 +400,24 @@ const isPreviewOrDummy = import.meta.env.DEV || import.meta.env.IS_PREVIEW === '
                     </div>
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; border-top: 1px solid var(--pa-amber-border); padding-top: 16px;">
-                <div>© 2026 机场推荐PRO · 全站终端化监控中</div>
-                <div>[ <span class="pa-ok">OK</span> ] all systems nominal</div>
-            </div>
+            <p style="color: var(--pa-text-dim); font-size: 12px; margin: 0;">推广说明：本站“前往官网”等链接为推广链接，通过它们注册本站可能获得佣金，你支付的价格不变。套餐数据按各机场官网整理，最后更新于 {UPDATED_LABEL}。</p>
+            <div style="border-top: 1px solid var(--pa-amber-border); padding-top: 16px;">© 2026 机场推荐PRO（jichangtuijianpro.com）</div>
         </footer>
     </div>
-    
+    <p class="sr-only" aria-live="polite" id="copy-status"></p>
     <script is:inline>
-        function paUpdateClock() {
-            const now = new Date();
-            const str = [now.getHours(), now.getMinutes(), now.getSeconds()]
-                .map(n => n.toString().padStart(2, '0')).join(':');
-            const clockEl = document.getElementById('paClock');
-            if (clockEl) clockEl.innerText = str;
+      document.addEventListener('click', async function (e) {
+        var btn = e.target.closest && e.target.closest('[data-copy]');
+        if (!btn || btn.classList.contains('copied')) return;
+        var code = btn.getAttribute('data-copy');
+        try { await navigator.clipboard.writeText(code); } catch (err) {
+          var el = btn.parentElement && btn.parentElement.querySelector('code');
+          if (el) { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
         }
-        setInterval(paUpdateClock, 1000);
-        paUpdateClock();
+        var t = btn.textContent; btn.textContent = '已复制'; btn.classList.add('copied');
+        var st = document.getElementById('copy-status'); if (st) st.textContent = '已复制优惠码 ' + code;
+        setTimeout(function () { btn.textContent = t; btn.classList.remove('copied'); }, 2000);
+      });
     </script>
   </body>
 </html>
