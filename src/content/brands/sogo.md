@@ -11,7 +11,7 @@ bandwidth_reset_period: "monthly"
 verification_date: "2026-10-04"
 evidence_status: "官网资料 + 实测延迟截图"
 features:
-  - "网络类型：全 IEPL专线，单节点峰值至 2.5Gbps"
+  - "网络类型：月付套餐全 IEPL 专线，年付小包与不限时包 IPLC 专线，单节点峰值至 2.5Gbps"
   - "流媒体解锁：原生 IP，支持 Netflix / Disney+ / ChatGPT / TikTok"
 evidence_images:
   - src: "/evidence/sogo/sogo-latency-1.png"

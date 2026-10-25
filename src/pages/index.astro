@@ -24,7 +24,7 @@ const oneTime = allPlans(brands).filter(({ p }) => p.billing === 'One-Time').sor
 const premiumCount = brands.filter((b) => b.premium).length;
 
 const picks = [
-  { tag: '综合首推', b: sogo, text: `月付 ¥${sogo.entry!.price} 起 ${fmtGB(sogo.entry!.traffic)}，全 IEPL 专线，晚高峰不降速。`, href: sogo.url },
+  { tag: '综合首推', b: sogo, text: `月付 ¥${sogo.entry!.price} 起 ${fmtGB(sogo.entry!.traffic)}，月付全 IEPL 专线，晚高峰不降速。`, href: sogo.url },
   { tag: '最便宜月付', b: cheapest.b, text: `${cheapest.p.name}：¥${cheapest.p.price}/月 ${fmtGB(cheapest.p.traffic)}。`, href: '/pianyi/' },
   { tag: '年付最便宜', b: yearly.b, text: `${yearly.p.name}：¥${yearly.p.price}/年，每月 ${fmtGB(yearly.p.traffic)}。`, href: '/pianyi/' },
   { tag: '大流量性价比', b: bigValue.b, text: `${bigValue.p.name}：¥${bigValue.p.price}/月 ${fmtGB(bigValue.p.traffic)}，约 ¥${perGB(bigValue.p)!.toFixed(3)}/GB。`, href: '/xingjiabi/' },
@@ -32,7 +32,7 @@ const picks = [
 ];
 
 const faq = [
-  { q: '2026 年机场推荐哪家？', a: `${UPDATED_MONTH}本站首推 Sogo云：月付 ¥25 起 150GB，全 IEPL 专线，节点覆盖香港、日本、新加坡、美国等 10 多个地区。预算更低可以看 ${cheapest.b.name}（¥${cheapest.p.price}/月起），流量大的可以看 ${bigValue.b.name}。完整名单见机场排行榜。` },
+  { q: '2026 年机场推荐哪家？', a: `${UPDATED_MONTH}本站首推 Sogo云：月付 ¥25 起 150GB，月付全 IEPL 专线，节点覆盖香港、日本、新加坡、美国等 10 多个地区。预算更低可以看 ${cheapest.b.name}（¥${cheapest.p.price}/月起），流量大的可以看 ${bigValue.b.name}。完整名单见机场排行榜。` },
   { q: '机场是什么？和 VPN 有什么区别？', a: '“机场”是代理订阅服务的俗称：服务商提供一批海外节点，你把订阅链接导入 Clash、小火箭等客户端就能使用。和传统 VPN 相比，机场节点更多、价格更低，在国内的连接成功率也更高。' },
   { q: '新手买机场要注意什么？', a: '优先选 IPLC/IEPL 专线机场；分清“月付价”和“年付折合价”；按实际用量买流量；第一次只买一个月，满意后再年付。避开只写“¥8 起”却不写月付价格、或者倍率很高的机场。' },
   { q: '便宜的机场能用吗？', a: `能用。本站收录的机场里，¥15–¥20/月 就能买到 100–150GB 的套餐，其中不少是专线。真正要小心的是没有月付、线路不写清楚的超低价机场。具体名单见便宜机场推荐。` },
@@ -44,7 +44,7 @@ const schemas = [itemListSchema(`${UPDATED_MONTH}机场推荐 Top 10`, top), faq
 ---
 <BaseLayout
   title={`机场推荐2026：${n}家好用机场对比与Top 10排行（10月更新）`}
-  description={`2026机场推荐（${UPDATED_MONTH}更新）：整理${n}家机场的月付价格、流量、IPLC/IEPL专线与优惠码，按预算和用量推荐。本月首推Sogo云：¥25/月150GB全IEPL专线，晚高峰不降速。`}
+  description={`2026机场推荐（${UPDATED_MONTH}更新）：整理${n}家机场的月付价格、流量、IPLC/IEPL专线与优惠码，按预算和用量推荐。本月首推Sogo云：¥25/月150GB月付全IEPL专线，晚高峰不降速。`}
   structuredData={schemas}
 >
   <div class="k-page">

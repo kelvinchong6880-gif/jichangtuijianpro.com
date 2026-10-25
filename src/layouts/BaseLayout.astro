@@ -8,9 +8,11 @@ export interface Props {
   structuredData?: Record<string, any> | Record<string, any>[];
   ogType?: 'website' | 'article';
   noindex?: boolean;
+  /** 分享图（站内路径），默认全站通用 1200×630 图 */
+  ogImage?: string;
 }
 
-const { title, description, structuredData, ogType = 'website', noindex = false } = Astro.props;
+const { title, description, structuredData, ogType = 'website', noindex = false, ogImage = '/images/og-default.png' } = Astro.props;
 const pageSchemas = structuredData ? (Array.isArray(structuredData) ? structuredData : [structuredData]) : [];
 
 const navItems = [
@@ -26,6 +28,7 @@ const navItems = [
 const currentPath = Astro.url.pathname;
 const siteDomain = import.meta.env.SITE_DOMAIN || 'https://www.example-jichang.com';
 const canonicalURL = new URL(Astro.url.pathname, siteDomain);
+const ogImageURL = new URL(ogImage, siteDomain);
 const isPreviewOrDummy =
   import.meta.env.DEV ||
   import.meta.env.IS_PREVIEW === 'true' ||
@@ -34,7 +37,7 @@ const isPreviewOrDummy =
 
 const baseSchemas = [
   { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, alternateName: '机场推荐', url: `${SITE_URL}/`, inLanguage: 'zh-CN' },
-  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/`, logo: `${SITE_URL}/favicon.svg` },
+  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/`, logo: `${SITE_URL}/images/site-logo.jpg` },
 ];
 const brands = await getBrandViews();
 const footerBrands = brands.slice(0, 12);
@@ -61,7 +64,12 @@ const footerBrands = brands.slice(0, 12);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:updated_time" content={`${UPDATED}T00:00:00+08:00`} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageURL} />
     {[...baseSchemas, ...pageSchemas].map((schema) => (
       <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     ))}

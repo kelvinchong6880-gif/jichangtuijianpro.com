@@ -3,6 +3,29 @@ import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import fs from 'fs';
+import { execSync } from 'child_process';
+
+// sitemap lastmod：价格数据日期取自 src/utils/data.ts 的 UPDATED（只维护一处）
+const UPDATED = fs.readFileSync('src/utils/data.ts', 'utf8').match(/export const UPDATED = '([\d-]+)'/)[1];
+const git = (cmd) => { try { return execSync(`git ${cmd}`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch { return ''; } };
+// 浅克隆时每个文件的“最后提交”都是 HEAD，日期没有意义，退回 UPDATED
+const hasHistory = git('rev-parse --is-shallow-repository') === 'false';
+
+/** 网址 -> 源文件；动态路由（品牌评测、对比页）返回 null */
+function sourceFile(pathname) {
+  const base = `src/pages${pathname.replace(/\/$/, '')}`;
+  return [`${base}/index.astro`, `${base}.astro`].find((f) => fs.existsSync(f)) ?? null;
+}
+
+/** 页面内容或引用的价格数据，取较新的日期 */
+function lastmodFor(pathname) {
+  const file = sourceFile(pathname);
+  if (!file) return UPDATED;
+  const fileDate = hasHistory ? git(`log -1 --format=%cs -- "${file}"`) : '';
+  const usesPlans = /getBrandViews|getBrands/.test(fs.readFileSync(file, 'utf8'));
+  const dates = [fileDate, usesPlans || !fileDate ? UPDATED : ''].filter(Boolean);
+  return dates.sort().at(-1);
+}
 
 const isProd = process.env.NODE_ENV === 'production';
 const isPreviewEnv = process.env.IS_PREVIEW === 'true' || (process.env.CF_PAGES === '1' && process.env.CF_PAGES_BRANCH !== 'main');
@@ -23,10 +46,10 @@ export default defineConfig({
     mdx(), 
     sitemap({
       filter: (page) => !page.includes('/404'),
-      // 每次更新数据后，把这个日期改成当天（与 src/utils/data.ts 的 UPDATED 保持一致）
+      // 更新价格数据后只需改 src/utils/data.ts 的 UPDATED；文章页按源文件最后提交日期
       serialize(item) {
-        const path = new URL(item.url).pathname;
-        item.lastmod = new Date('2026-10-04T00:00:00+08:00').toISOString();
+        const path = decodeURI(new URL(item.url).pathname);
+        item.lastmod = lastmodFor(path); // W3C 日期 YYYY-MM-DD（北京时间），scripts/submit-indexnow.js 按它筛选
         const core = ['/', '/paihangbang/', '/xingjiabi/', '/pianyi/', '/duibi/'];
         item.priority = path === '/' ? 1.0 : core.includes(path) ? 0.9 : path.startsWith('/brands/') || path.startsWith('/duibi/') ? 0.8 : 0.6;
         item.changefreq = core.includes(path) ? 'weekly' : 'monthly';

@@ -23,7 +23,7 @@ const wuyou = brands.find((b) => b.slug === 'wuyou');
 const picks = top10(brands).slice(0, 6);
 
 const faq = [
-  { q: '便宜又好用的机场推荐哪家？', a: `首推 Sogo云：基础版 ¥25/月 150GB，全 IEPL 专线，三年付折合 ¥15/月，能解锁 Netflix 和 ChatGPT，结算填优惠码 ${sogo.promo}。只追求最低价，可以看下方月付 ¥20 以内的表格。` },
+  { q: '便宜又好用的机场推荐哪家？', a: `首推 Sogo云：基础版 ¥25/月 150GB，月付全 IEPL 专线，三年付折合 ¥15/月，能解锁 Netflix 和 ChatGPT，结算填优惠码 ${sogo.promo}。只追求最低价，可以看下方月付 ¥20 以内的表格。` },
   { q: '最便宜的机场多少钱一个月？', a: `本站收录的机场里，月付最低 ${fmtPrice(lowest.entry!.price)}/月（${lowest.name} ${lowest.entry!.name}，${fmtGB(lowest.entry!.traffic)}）。年付最低 ${fmtPrice(lowestYear.p.price)}/年（${lowestYear.b.name}，每月 ${fmtGB(lowestYear.p.traffic)}），折合约 ${fmtPrice(lowestYear.p.price / 12)}/月。` },
   { q: '有 10 块钱以内的机场吗？', a: `按月付算，靠谱机场基本都在 ¥15 以上。所谓“¥8 一个月”通常是年付价格折算的，比如 ${lowestYear.b.name} 的 ${fmtPrice(lowestYear.p.price)}/年。如果真有月付不到 ¥10、又不写线路和倍率的机场，要特别小心。` },
   { q: '便宜机场好用吗？会不会很卡？', a: `价格低不等于线路差。本站收录的 ${cheapPremium.length} 家 IPLC/IEPL 专线机场里，有不少月付在 ¥15–¥20，比如 ${cheapPremium.slice(0, 3).map((b) => b.name).join('、')}。真正决定晚高峰卡不卡的是线路，不是价格。` },
@@ -32,7 +32,7 @@ const faq = [
 ];
 
 const schemas = [
-  itemListSchema(`${UPDATED_MONTH}便宜机场推荐`, top10(brands)),
+  itemListSchema(`${UPDATED_MONTH}便宜机场推荐：月付最低价排行`, cheapestBrands.slice(0, 10)),
   faqSchema(faq),
   breadcrumbSchema([{ name: '便宜机场', path: '/pianyi/' }]),
 ];
@@ -53,7 +53,7 @@ const schemas = [
     <section class="k-section">
       <h2>便宜机场一句话推荐</h2>
       <ul class="k-list">
-        <li><strong>首选：便宜又稳</strong>：<a href={sogo.url}>Sogo云</a> ¥25/月 150GB 全 IEPL 专线，三年付折合 ¥15/月。优惠码 <code>{sogo.promo}</code>。</li>
+        <li><strong>首选：便宜又稳</strong>：<a href={sogo.url}>Sogo云</a> ¥25/月 150GB 月付全 IEPL 专线，三年付折合 ¥15/月。优惠码 <code>{sogo.promo}</code>。</li>
         <li><strong>月付最便宜</strong>：<a href={lowest.url}>{lowest.name}</a> {fmtPrice(lowest.entry!.price)}/月 {fmtGB(lowest.entry!.traffic)}（{lowest.lineLabel}）。</li>
         {wuyou && <li><strong>前十名里月付最低</strong>：<a href={wuyou.url}>{wuyou.name}</a> ¥19/月 100GB，全 IPLC 专线，官网写明支持 ChatGPT 和 4K Netflix。优惠码 <code>{wuyou.promo}</code>。</li>}
         <li><strong>一年只付一次</strong>：<a href={lowestYear.b.url}>{lowestYear.b.name}</a> {lowestYear.p.name} {fmtPrice(lowestYear.p.price)}/年，每月 {fmtGB(lowestYear.p.traffic)}。</li>

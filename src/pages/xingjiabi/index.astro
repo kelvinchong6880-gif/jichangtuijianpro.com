@@ -39,7 +39,7 @@ const sogo = brands.find((b) => b.slug === 'sogo')!;
 const picks = top10(brands).slice(0, 6);
 
 const faq = [
-  { q: '性价比最高的机场是哪家？', a: `综合价格、线路和稳定性，本站首推 Sogo云：优选版 ¥45/月 350GB（约 ¥${perGB(sogo.bestValue!)!.toFixed(3)}/GB），全 IEPL 专线，优惠码 ${sogo.promo}。只看每 GB 单价，专线机场里最低的是 ${champ.name} 的 ${champ.bestValue!.name}：${fmtPrice(champ.bestValue!.price)}/月 ${fmtGB(champ.bestValue!.traffic)}，约 ¥${perGB(champ.bestValue!)!.toFixed(3)}/GB。如果每月用不了那么多流量，按下面的流量分档表选更合适。` },
+  { q: '性价比最高的机场是哪家？', a: `综合价格、线路和稳定性，本站首推 Sogo云：优选版 ¥45/月 350GB（约 ¥${perGB(sogo.bestValue!)!.toFixed(3)}/GB），月付全 IEPL 专线，优惠码 ${sogo.promo}。只看每 GB 单价，专线机场里最低的是 ${champ.name} 的 ${champ.bestValue!.name}：${fmtPrice(champ.bestValue!.price)}/月 ${fmtGB(champ.bestValue!.traffic)}，约 ¥${perGB(champ.bestValue!)!.toFixed(3)}/GB。如果每月用不了那么多流量，按下面的流量分档表选更合适。` },
   { q: '机场性价比怎么算？', a: '用“每月价格 ÷ 每月流量”算出每 GB 价格。年付和季付先折成每月价格再算；不限时流量包用总价除以总流量。再结合线路类型（专线优先）判断。' },
   { q: '大流量套餐一定更划算吗？', a: '每 GB 单价通常更低，但只有用得完才划算。每月只用 100GB 的人买 1TB 套餐，实际每 GB 成本反而高好几倍。先估算自己的用量，再在对应流量档里选单价最低的。' },
   { q: '性价比机场和便宜机场有什么区别？', a: '便宜机场看的是“最少花多少钱能用上”，性价比机场看的是“同样的钱能买多少流量”。预算有限、用量小，看便宜机场；用量大、想长期用，看性价比。' },
@@ -47,7 +47,7 @@ const faq = [
 ];
 
 const schemas = [
-  itemListSchema(`${UPDATED_MONTH}性价比机场推荐`, top10(brands)),
+  itemListSchema(`${UPDATED_MONTH}性价比机场推荐：每GB价格排行`, brandBest.slice(0, 10)),
   faqSchema(faq),
   breadcrumbSchema([{ name: '性价比机场', path: '/xingjiabi/' }]),
 ];

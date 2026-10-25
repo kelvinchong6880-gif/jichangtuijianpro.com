@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'src/content/brands/**.md'
-      - 'src/content/posts/**.md'
-      - 'src/pages/**.astro'
+      - 'src/**'
+      - 'astro.config.mjs'
+      - 'public/_redirects'
       - 'scripts/submit-indexnow.js'
-  workflow_dispatch: # 允许手动在 Actions 页面触发
+  workflow_dispatch: # 手动触发时提交 sitemap 里的全部网址
 
 jobs:
   submit-indexnow:
@@ -17,11 +17,25 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # sitemap lastmod 需要完整提交历史
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.node-version'
+          cache: npm
+
+      - name: Build site (generates sitemap)
+        env:
+          SITE_DOMAIN: 'https://jichangtuijianpro.com'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Only submit pages changed since last push
+        if: github.event_name == 'push'
+        run: echo "INDEXNOW_SINCE=$(git log -1 --format=%cs ${{ github.event.before }} 2>/dev/null)" >> "$GITHUB_ENV"
 
       - name: Submit URLs to IndexNow
         env:
