@@ -22,6 +22,8 @@ const brandsCollection = defineCollection({
     verification_date: z.string(),
     evidence_status: z.string(),
     evidence_images: z.array(z.object({ src: z.string(), alt: z.string(), width: z.number(), height: z.number() })).optional(),
+    speedtest_notes: z.array(z.string()).optional(), // 测速板块的说明文字，每项一段
+    speedtest_images: z.array(z.object({ src: z.string(), alt: z.string(), width: z.number(), height: z.number() })).optional(),
     is_dummy: z.boolean().default(false), // 标记演示数据，正式发布前需清理
     features: z.array(z.string()).optional(),
     seo_title: z.string().optional(),

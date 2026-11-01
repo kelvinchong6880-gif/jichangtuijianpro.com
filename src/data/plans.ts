@@ -58,7 +58,7 @@ export const PLANS: Record<string, BrandPlans> = {
       },
       {
         "name": "SOGO优选餐不限时版",
-        "price": 220,
+        "price": 250,
         "billing": "One-Time",
         "traffic": 250
       },
@@ -179,13 +179,68 @@ export const PLANS: Record<string, BrandPlans> = {
       }
     ]
   },
+  "yuzhou": {
+    "file": "宇宙",
+    "lines": [
+      "IPLC",
+      "IEPL"
+    ],
+    "streaming": true,
+    "ai": true,
+    "promo": "YUZHOU553",
+    "nodeRegions": "香港×20、台湾×5、日本×10、新加坡×10、美国×10、马来西亚、德国等",
+    "plans": [
+      {
+        "name": "星云年付小包",
+        "price": 96,
+        "billing": "Yearly",
+        "traffic": 60
+      },
+      {
+        "name": "行星基础版",
+        "price": 25,
+        "billing": "Monthly",
+        "traffic": 160
+      },
+      {
+        "name": "恒星标准版",
+        "price": 50,
+        "billing": "Monthly",
+        "traffic": 300
+      },
+      {
+        "name": "星系专业版",
+        "price": 100,
+        "billing": "Monthly",
+        "traffic": 700
+      },
+      {
+        "name": "寰宇旗舰版",
+        "price": 200,
+        "billing": "Monthly",
+        "traffic": 1500
+      },
+      {
+        "name": "行星基础版（不限时）",
+        "price": 110,
+        "billing": "One-Time",
+        "traffic": 120
+      },
+      {
+        "name": "恒星标准版（不限时）",
+        "price": 220,
+        "billing": "One-Time",
+        "traffic": 200
+      }
+    ]
+  },
   "firefly": {
     "file": "firefly",
     "lines": [
       "IPLC"
     ],
-    "streaming": null,
-    "ai": null,
+    "streaming": true,
+    "ai": true,
     "promo": "firefly",
     "nodeRegions": "香港、台湾、美国、新加坡、马来西亚、日本等",
     "plans": [

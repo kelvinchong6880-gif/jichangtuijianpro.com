@@ -3,10 +3,13 @@ import { PLANS, type PlanItem, type BrandPlans } from '../data/plans';
 
 export const SITE_NAME = '机场推荐PRO';
 export const SITE_URL = 'https://jichangtuijianpro.com';
-/** 全站“最后更新”日期：更新价格后改这里 */
-export const UPDATED = '2026-10-04';
-export const UPDATED_LABEL = '2026年10月4日';
-export const UPDATED_MONTH = '2026年10月';
+/** 全站“最后更新”日期：更新内容或排名后改这里 */
+export const UPDATED = '2026-11-01';
+export const UPDATED_LABEL = '2026年11月1日';
+export const UPDATED_MONTH = '2026年11月';
+export const UPDATED_MONTH_SHORT = '11月';
+/** 套餐数据最后一次对照官网核对的日期：重新核对价格后再改这里 */
+export const PLANS_VERIFIED_LABEL = '2026年10月4日';
 
 export const getBrands = async () => {
   const allBrands = await getCollection('brands');
@@ -26,6 +29,11 @@ export function fmtGB(g: number | null | undefined): string {
   return `${+g.toFixed(1)}GB`;
 }
 export const fmtPrice = (n: number) => `¥${+n.toFixed(2)}`;
+/** '2026-10-04' -> '2026年10月4日' */
+export const dateLabel = (d: string) => {
+  const [y, m, day] = d.split('-').map(Number);
+  return `${y}年${m}月${day}日`;
+};
 export const billingLabel = (b: PlanItem['billing']) =>
   ({ Monthly: '月付', Quarterly: '季付', Yearly: '年付', 'One-Time': '一次性' } as const)[b];
 
@@ -175,7 +183,7 @@ export const PAIRS: [string, string][] = [
 ];
 export const pairSlug = (a: string, b: string) => `${a}-vs-${b}`;
 
-/** 编辑推荐 Top 10：8 家主推 + 2 家专线里每 GB 最便宜的 */
+/** 编辑推荐 Top 10：按 sort_order 排名，不足 10 家时用专线里每 GB 最便宜的补齐 */
 export function top10(list: BrandView[]): BrandView[] {
   const picks = list.filter((b) => b.rank < 999);
   const rest = list

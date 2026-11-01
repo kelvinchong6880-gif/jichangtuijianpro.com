@@ -4,7 +4,7 @@ import BrandName from '../../components/BrandName.astro';
 import EditorPicks from '../../components/EditorPicks.astro';
 import {
   getBrandViews, top10, allPlans, perGB, monthlyEq, fmtGB, fmtPrice, faqSchema, itemListSchema, breadcrumbSchema,
-  UPDATED_LABEL, UPDATED_MONTH,
+  UPDATED, UPDATED_LABEL, UPDATED_MONTH, UPDATED_MONTH_SHORT,
 } from '../../utils/data';
 
 const brands = await getBrandViews();
@@ -38,13 +38,13 @@ const schemas = [
 ];
 ---
 <BaseLayout
-  title={`便宜机场推荐2026：月付¥15起的${n}家机场低价排行（10月更新）`}
+  title={`便宜机场推荐2026：月付¥15起的${n}家机场低价排行（${UPDATED_MONTH_SHORT}更新）`}
   description={`2026便宜机场推荐：月付¥${lowest.entry!.price}起、年付¥${lowestYear.p.price}起，整理${n}家机场的最低价套餐，分月付¥20以内、¥30以内、年付小包和不限时流量包排行，附学生党推荐和优惠码。`}
   structuredData={schemas}
   ogType="article"
 >
   <div class="k-page">
-    <div class="k-eyebrow"><a href="/">机场推荐</a> / 便宜机场 · 更新于 <time datetime="2026-10-04">{UPDATED_LABEL}</time></div>
+    <div class="k-eyebrow"><a href="/">机场推荐</a> / 便宜机场 · 更新于 <time datetime={UPDATED}>{UPDATED_LABEL}</time></div>
     <h1>便宜机场推荐 2026：月付 ¥{lowest.entry!.price} 起的低价好用机场</h1>
     <p class="k-lead">预算有限也能用上好机场。下面按 <strong>真实月付价格</strong> 排序（不用年付折算冒充月付），分成月付 ¥20 以内、¥30 以内、年付小包和不限时流量包四张表。其中 IPLC / IEPL 专线机场单独标出，便宜和稳定可以兼得。</p>
 
@@ -55,7 +55,7 @@ const schemas = [
       <ul class="k-list">
         <li><strong>首选：便宜又稳</strong>：<a href={sogo.url}>Sogo云</a> ¥25/月 150GB 月付全 IEPL 专线，三年付折合 ¥15/月。优惠码 <code>{sogo.promo}</code>。</li>
         <li><strong>月付最便宜</strong>：<a href={lowest.url}>{lowest.name}</a> {fmtPrice(lowest.entry!.price)}/月 {fmtGB(lowest.entry!.traffic)}（{lowest.lineLabel}）。</li>
-        {wuyou && <li><strong>前十名里月付最低</strong>：<a href={wuyou.url}>{wuyou.name}</a> ¥19/月 100GB，全 IPLC 专线，官网写明支持 ChatGPT 和 4K Netflix。优惠码 <code>{wuyou.promo}</code>。</li>}
+        {wuyou && <li><strong>主推机场里月付最低</strong>：<a href={wuyou.url}>{wuyou.name}</a> ¥19/月 100GB，全 IPLC 专线，官网写明支持 ChatGPT 和 4K Netflix。优惠码 <code>{wuyou.promo}</code>。</li>}
         <li><strong>一年只付一次</strong>：<a href={lowestYear.b.url}>{lowestYear.b.name}</a> {lowestYear.p.name} {fmtPrice(lowestYear.p.price)}/年，每月 {fmtGB(lowestYear.p.traffic)}。</li>
       </ul>
     </section>

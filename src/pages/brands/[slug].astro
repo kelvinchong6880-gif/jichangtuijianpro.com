@@ -5,7 +5,7 @@ import BrandName from '../../components/BrandName.astro';
 import { render } from 'astro:content';
 import {
   getBrandViews, avgEntryPrice, perGB, fmtGB, fmtPrice, faqSchema, breadcrumbSchema,
-  SITE_URL, SITE_NAME, UPDATED, UPDATED_LABEL, UPDATED_MONTH, PAIRS, pairSlug, type BrandView,
+  SITE_URL, SITE_NAME, UPDATED, UPDATED_LABEL, UPDATED_MONTH, dateLabel, PAIRS, pairSlug, type BrandView,
 } from '../../utils/data';
 import { USAGE, cheapestFor, planPriceText, unlockText, oneLiner, prosCons, brandFaq } from '../../utils/review';
 
@@ -17,6 +17,8 @@ export async function getStaticPaths() {
 const { b, all } = Astro.props as { b: BrandView; all: BrandView[] };
 const { Content } = await render(b.entry_data);
 const evidence = b.entry_data.data.evidence_images ?? [];
+const speedtest = b.entry_data.data.speedtest_images ?? [];
+const speedNotes = b.entry_data.data.speedtest_notes ?? [];
 const avg = avgEntryPrice(all);
 const { pros, cons } = prosCons(b, avg);
 const faq = brandFaq(b);
@@ -93,6 +95,21 @@ const schemas = [
       <Content />
     </section>
 
+    {speedtest.length > 0 && (
+      <section class="k-section" id="speed">
+        <h2>{b.name}网速实测</h2>
+        {speedNotes.map((note) => <p>{note}</p>)}
+        <div class="k-grid" style="grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));">
+          {speedtest.map((img, i) => (
+            <figure style={`margin:0; border:1px solid var(--pa-amber-border)${img.width >= 900 ? '; grid-column:1 / -1' : ''}`}>
+              <a href={img.src} target="_blank" rel="noopener"><img src={img.src} alt={img.alt} width={img.width} height={img.height} loading="lazy" decoding="async" style="width:100%;height:auto;display:block" /></a>
+              <figcaption class="k-muted" style="padding:6px 8px">测速截图 {i + 1}/{speedtest.length}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
+
     {evidence.length > 0 && (
       <section class="k-section" id="test">
         <h2>{b.name}节点延迟实测</h2>
@@ -164,7 +181,7 @@ const schemas = [
     <section class="k-section">
       <h2>{b.name}常见问题</h2>
       {faq.map((f) => <div class="k-qa"><h3>{f.q}</h3><p>{f.a}</p></div>)}
-      <p class="k-muted">套餐数据来自 {b.name} 官网，核对于 {UPDATED_LABEL}；价格以官网结算页为准。本页“前往官网”为推广链接。</p>
+      <p class="k-muted">套餐数据来自 {b.name} 官网，核对于 {dateLabel(b.verified)}；价格以官网结算页为准。本页“前往官网”为推广链接。</p>
     </section>
   </article>
 </BaseLayout>

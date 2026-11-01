@@ -9,12 +9,25 @@ price_yearly: 96.0
 bandwidth_gb: 150
 bandwidth_reset_period: "monthly"
 verification_date: "2026-10-04"
-evidence_status: "官网资料核对"
+evidence_status: "官网资料核对 + 测速与解锁截图"
 features:
   - "网络类型：官方宣称全节点接入 IPLC 专线"
   - "计费方式：提供不限时/按量计费套餐，流量不过期"
+speedtest_notes:
+  - "以下是 Firefly 在 2026 年 7 月 18 日晚 20:35 的 MiaoKo 测速和流媒体解锁截图，正好是晚高峰时段。测试入口为珠海联通（9Gbps、32 线程），50 个节点全部参与。"
+  - "平均速度：香港约 470–550 MB/s，新加坡约 330–520 MB/s，日本约 22–170 MB/s，台湾约 29–77 MB/s，美国约 8–12 MB/s。当次有 2 个节点没有测出有效速度（香港01 为 0、新加坡07 只有 9.6 KB/s），遇到这种情况换同地区其他节点即可。"
+  - "流媒体解锁：50 个节点的 YouTube、Netflix、Disney+ 全部解锁，并解锁到节点所在地区。这是一次测试的结果，只代表当时和这一条测试线路，你的本地网络下速度会不同；建议先月付，晚上自己再测一次。"
+speedtest_images:
+  - src: "/evidence/firefly/firefly-speed.webp"
+    alt: "Firefly MiaoKo 订阅测速截图：50 个节点的 TLS 延迟、HTTPS 延迟、平均速度、最高速度和 UDP 类型"
+    width: 837
+    height: 1280
+  - src: "/evidence/firefly/firefly-unlock.webp"
+    alt: "Firefly MiaoKo 流媒体解锁截图：50 个节点的 YouTube、Netflix、Disney+ 全部解锁"
+    width: 763
+    height: 1280
 logo: "/images/logos/firefly-logo.webp"
-sort_order: 4
+sort_order: 7
 seo_title: "Firefly (萤火虫) 官方套餐价格表：¥96年付/月付¥25起与¥100不限时流量包资费明细"
 seo_description: "汇总 Firefly（萤火虫）官方套餐资费：¥25/月起常规订阅（150GB-1.0TB）、¥96/年轻量版，及¥100一次性不限时流量包。全节点IPLC专线，不限设备数。"
 seo_h1: "firefly 官方定价与套餐配比"

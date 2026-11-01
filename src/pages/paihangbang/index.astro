@@ -4,7 +4,7 @@ import Promo from '../../components/Promo.astro';
 import BrandName from '../../components/BrandName.astro';
 import {
   getBrandViews, top10, perGB, fmtGB, fmtPrice, faqSchema, itemListSchema, breadcrumbSchema,
-  UPDATED_LABEL, UPDATED_MONTH, avgEntryPrice,
+  UPDATED, UPDATED_LABEL, UPDATED_MONTH, UPDATED_MONTH_SHORT, PLANS_VERIFIED_LABEL, avgEntryPrice,
 } from '../../utils/data';
 import { oneLiner, prosCons, unlockText } from '../../utils/review';
 
@@ -20,7 +20,13 @@ const SPECIAL: Record<string, string> = {
   sogo: '月付全 IEPL 专线、¥25 就有 150GB，节点覆盖 10 多个地区，年付 8 折到三年付 6 折，另有 4 款不限时包，轻度到重度用户都能找到合适档位。',
   feimao: '学生版 ¥84/年 是专线机场里门槛最低的年付之一，月付 ¥25 有 150GB，全 IPLC、单节点 2.5Gbps，节点数量和 Sogo云 接近。',
   weifeng: '乘风 ¥27/月 有 200GB、破风 ¥57/月 500GB，同价位流量给得足；另有 270GB、570GB 两款不限时包。',
-  wuyou: '¥19/月 100GB，是前十名里月付门槛最低的一家，官网写明支持 ChatGPT、Gemini 和 4K Netflix。',
+  muguang: '基础版 ¥20/月 120GB，至尊版 ¥180/月 1.5TB；另有 ¥109 年付和 3 款不限时包，官网写明支持流媒体和 AI。',
+  yuzhou: '行星基础版 ¥25/月 160GB，IEPL/IPLC 专线节点、不限速不限设备，自研客户端一键连接；另有 ¥96 年付小包和 ¥110 起的不限时包。',
+  ermao: 'IEPL 专线，白猫 ¥20/月 130GB，60+ 节点覆盖港台新日美德；¥89 年付小包和 ¥99 不限时 100GB 适合轻度用户。',
+  feiv: 'IPLC / BGP 线路，入门方案 ¥25/月 150GB，商业方案 ¥190/月 约 1.8TB，另有 ¥99 年付和 3 款单次流量包。',
+  guangsu: '极速版 ¥23/月 138GB、流光版 ¥34/月 238GB，IPLC 专线的入门和中档都不贵；另有 ¥99 年付和 1TB 不限时包。',
+  xingdaomeng: 'IPLC / IEPL 专线，¥25/月 150GB，旗舰版 ¥130/月 1TB；不限时包从 ¥100/100GB 到 ¥600/1TB，节点地区多。',
+  wuyou: '¥19/月 100GB，是本榜主推机场里月付门槛最低的一家，官网写明支持 ChatGPT、Gemini 和 4K Netflix。',
   firefly: '套餐梯度清晰：¥25/150GB、¥45/300GB、¥85/600GB、¥150/1TB，另有 ¥96 年付和 ¥100 不限时包。',
   kuajie: '无界 1.8TB 只要 ¥130/月，大流量单价在专线机场里最低；年付 8 折到三年付 6 折，优惠码还能叠加。',
   shanyue: '¥24/月 150GB、晚高峰不限速，原生 IP 解锁流媒体、ChatGPT 和 TikTok，适合做 TikTok 和 AI 的用户。',
@@ -50,13 +56,13 @@ const schemas = [
 ];
 ---
 <BaseLayout
-  title={`机场排行榜2026：${n}家机场排名与十大机场推荐（10月更新）`}
+  title={`机场排行榜2026：${n}家机场排名与十大机场推荐（${UPDATED_MONTH_SHORT}更新）`}
   description={`2026机场排行榜（${UPDATED_MONTH}更新）：${n}家机场按专线质量、月付价格、每GB成本综合排名，附十大机场推荐理由，以及专线、便宜、大流量、性价比、不限时分类排行和优惠码。`}
   structuredData={schemas}
   ogType="article"
 >
   <div class="k-page">
-    <div class="k-eyebrow"><a href="/">机场推荐</a> / 机场排行榜 · 更新于 <time datetime="2026-10-04">{UPDATED_LABEL}</time></div>
+    <div class="k-eyebrow"><a href="/">机场推荐</a> / 机场排行榜 · 更新于 <time datetime={UPDATED}>{UPDATED_LABEL}</time></div>
     <h1>2026 机场排行榜：{n} 家机场排名与十大机场推荐</h1>
     <p class="k-lead">我们按 <strong>线路质量、月付价格、每 GB 成本、套餐灵活度、流媒体和 AI 解锁</strong> 五个方面，给 {n} 家机场排了名。前十名逐一写了推荐理由和注意事项；后面还有专线、便宜、大流量、性价比、不限时五个分类排行，按你最在意的一项直接选。</p>
 
@@ -127,7 +133,7 @@ const schemas = [
         <li><strong>套餐灵活度</strong>：有没有年付小包、长期折扣和不限时流量包。</li>
         <li><strong>解锁</strong>：官网是否写明支持 Netflix、ChatGPT 等。</li>
       </ul>
-      <p>所有数据来自各机场官网，最后核对于 {UPDATED_LABEL}。Sogo云 是本站合作品牌；网络体验会受本地运营商影响，第一次购买建议先选月付。</p>
+      <p>所有数据来自各机场官网，最后核对于 {PLANS_VERIFIED_LABEL}。Sogo云 是本站合作品牌；网络体验会受本地运营商影响，第一次购买建议先选月付。</p>
     </section>
 
     <section class="k-section">

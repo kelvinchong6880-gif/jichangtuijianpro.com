@@ -9,11 +9,24 @@ price_yearly: 99.0
 bandwidth_gb: 150
 bandwidth_reset_period: "monthly"
 verification_date: "2026-10-04"
-evidence_status: "官网资料核对"
+evidence_status: "官网资料核对 + 测速截图"
 features:
   - "流媒体解锁：官方标称支持解锁 Netflix, ChatGPT, TikTok 等"
+speedtest_notes:
+  - "以下是 飞V 节点在 2026 年 10 月 31 日傍晚的两张实测截图（IP、网络运营商和节点位置已打码）。Cloudflare 网速测试结果：下载 12.2 Mbps、上传 18.1 Mbps、延迟 140 ms、抖动 62.3 ms、丢包率 1.8%；网络质量得分为流媒体、游戏、视频通话各 3 星。"
+  - "YouTube 截图是几乎同一时间播放的 1080P 直播：连接速度约 31.8 Mbps，1587 帧只丢了 3 帧，缓冲保持在 12 秒左右，看高清视频没有压力。"
+  - "这是 18:40 左右的一次测试，只代表当时这个节点和本地网络。从丢包和抖动看，这次线路表现一般，建议先月付，并在晚上 8–11 点换几个节点自己测一次。"
+speedtest_images:
+  - src: "/evidence/feiv/feiv-speed.png"
+    alt: "飞V Cloudflare 网速测试结果：下载 12.2 Mbps、上传 18.1 Mbps、延迟 140 ms、丢包率 1.8%，IP 和节点位置已打码"
+    width: 992
+    height: 789
+  - src: "/evidence/feiv/feiv-youtube.png"
+    alt: "飞V 节点播放 YouTube 1080P 直播的统计信息：连接速度 31784 Kbps，1587 帧丢 3 帧"
+    width: 1280
+    height: 772
 logo: "/images/logos/feiv-logo.webp"
-sort_order: 999
+sort_order: 8
 seo_title: "飞V (FlyV) 官网套餐价格表：¥99年付/¥25月付与一次性买断包资费明细"
 seo_description: "汇总飞V (FlyV) 官网在售全档位套餐，包含 ¥99/年轻量版、¥25-¥190/月常规订阅（150GB-1.8TB）、¥189-¥799 一次性永不限时买断包（130GB-600GB）以及 ¥600/月独享原生IP黄金专线，提供客观无夸大的官方参数对照。"
 seo_h1: "飞V (FlyV) 官方定价与套餐规格明细"

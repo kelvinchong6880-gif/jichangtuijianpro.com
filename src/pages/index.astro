@@ -4,7 +4,7 @@ import Promo from '../components/Promo.astro';
 import BrandName from '../components/BrandName.astro';
 import {
   getBrandViews, top10, allPlans, perGB, fmtGB, fmtPrice, faqSchema, itemListSchema,
-  UPDATED_LABEL, UPDATED_MONTH, PAIRS, pairSlug,
+  UPDATED, UPDATED_LABEL, UPDATED_MONTH, UPDATED_MONTH_SHORT, PAIRS, pairSlug,
 } from '../utils/data';
 import { unlockText } from '../utils/review';
 
@@ -43,13 +43,13 @@ const faq = [
 const schemas = [itemListSchema(`${UPDATED_MONTH}机场推荐 Top 10`, top), faqSchema(faq)];
 ---
 <BaseLayout
-  title={`机场推荐2026：${n}家好用机场对比与Top 10排行（10月更新）`}
+  title={`机场推荐2026：${n}家好用机场对比与Top 10排行（${UPDATED_MONTH_SHORT}更新）`}
   description={`2026机场推荐（${UPDATED_MONTH}更新）：整理${n}家机场的月付价格、流量、IPLC/IEPL专线与优惠码，按预算和用量推荐。本月首推Sogo云：¥25/月150GB月付全IEPL专线，晚高峰不降速。`}
   structuredData={schemas}
 >
   <div class="k-page">
     <section>
-      <div class="k-eyebrow">更新于 <time datetime="2026-10-04">{UPDATED_LABEL}</time> · 收录 {n} 家机场</div>
+      <div class="k-eyebrow">更新于 <time datetime={UPDATED}>{UPDATED_LABEL}</time> · 收录 {n} 家机场</div>
       <h1>机场推荐 2026：{n} 家好用机场价格、线路与流量对比</h1>
       <p class="k-lead">不知道买哪家机场？我们把 {n} 家机场官网的套餐逐一整理成表：月付多少钱、每月多少流量、是不是 IPLC/IEPL 专线、能不能看 Netflix 和用 ChatGPT、有没有优惠码。其中 {premiumCount} 家是专线机场。按预算和用量对号入座，几分钟就能选好。</p>
       <div class="k-callout">

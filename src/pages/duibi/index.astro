@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import BrandName from '../../components/BrandName.astro';
 import {
   getBrandViews, top10, perGB, fmtGB, fmtPrice, faqSchema, breadcrumbSchema,
-  UPDATED_LABEL, UPDATED_MONTH, PAIRS, pairSlug,
+  UPDATED, UPDATED_LABEL, UPDATED_MONTH, UPDATED_MONTH_SHORT, PAIRS, pairSlug,
 } from '../../utils/data';
 import { USAGE, cheapestFor, planPriceText, unlockText } from '../../utils/review';
 
@@ -22,13 +22,13 @@ const faq = [
 const schemas = [faqSchema(faq), breadcrumbSchema([{ name: '机场对比', path: '/duibi/' }])];
 ---
 <BaseLayout
-  title={`机场对比2026：${n}家机场价格、流量、线路横向对比（10月更新）`}
+  title={`机场对比2026：${n}家机场价格、流量、线路横向对比（${UPDATED_MONTH_SHORT}更新）`}
   description={`机场对比（${UPDATED_MONTH}更新）：${n}家机场的月付价格、年付、流量、IPLC/IEPL专线、不限时套餐和Netflix/ChatGPT解锁一表对比，按轻度、日常、追剧、重度用量推荐，附Sogo云、飞猫云、微风、无忧等热门机场两两对比。`}
   structuredData={schemas}
   ogType="article"
 >
   <div class="k-page">
-    <div class="k-eyebrow"><a href="/">机场推荐</a> / 机场对比 · 更新于 <time datetime="2026-10-04">{UPDATED_LABEL}</time></div>
+    <div class="k-eyebrow"><a href="/">机场推荐</a> / 机场对比 · 更新于 <time datetime={UPDATED}>{UPDATED_LABEL}</time></div>
     <h1>机场对比 2026：{n} 家机场价格、流量与线路横向对比</h1>
     <p class="k-lead">把 {n} 家机场放进同一张表：月付多少钱、每月多少流量、年付最低多少、是不是专线、有没有不限时包、能不能看 Netflix 和用 ChatGPT。下面还有按用量的对比表和热门机场两两对比，帮你快速决定“哪个机场好”。</p>
 
